@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import * as SQLite from 'expo-sqlite';
 import { Loading } from './animation';
 import { Modal, Text, View } from 'react-native';
+import useAppStyles from '../utils/styles';
 
 
 const DatabaseContext = createContext<SQLite.SQLiteDatabase|null>(null);
@@ -14,6 +15,7 @@ const DatabaseContext = createContext<SQLite.SQLiteDatabase|null>(null);
 export const DatabaseProvider = ({children}: {children: React.ReactNode}): React.ReactNode => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [db, setDb] = useState<SQLite.SQLiteDatabase|null>(null);
+  const styles = useAppStyles()
 
   useEffect(() => {
     const createDatabase = async () => {
@@ -45,18 +47,8 @@ export const DatabaseProvider = ({children}: {children: React.ReactNode}): React
 
   if (!isInitialized) {
     return <Modal>
-      <View style={{
-        justifyContent: 'center',
-        alignItems: 'center',
-        flex: 1,
-        flexDirection: 'row',
-        gap: 5
-      }}>
-        <Text style={{
-          fontSize: 50,
-          fontWeight: 'bold',
-          color: 'seagreen'
-        }}>Salio</Text>
+      <View style={styles.screenBackground}>
+        <Text style={styles.logo}>Salio</Text>
         <Loading color={'#2E8B57FF'}/>
       </View>
     </Modal>;
