@@ -17,6 +17,19 @@ const useAppStyles = () => {
       fontSize: 50,
       fontWeight: 'bold' as 'bold',
       color: 'seagreen'
+    },
+    heading: {
+      color: 'seagreen',
+      fontSize: 30,
+      fontWeight: 'bold' as 'bold',
+      alignSelf: 'center' as 'center'
+    },
+    text: {
+      color: systemTheme === "dark" ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)",
+      fontSize: 17
+    },
+    container: {
+      backgroundColor: systemTheme === "light" ? "rgb(255, 255, 255)" : "rgba(255, 255, 255, 0.3)"
     }
 
   };
