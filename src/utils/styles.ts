@@ -10,10 +10,7 @@ const useAppStyles = () => {
   return {
     screenBackground: {
       backgroundColor: systemTheme === 'light' ? 'rgb(245, 245, 245)' : 'rgb(0, 0, 0)',
-      justifyContent: 'center' as 'center',
-      alignItems: 'center' as FlexAlignType,
       flex: 1,
-      flexDirection: 'row' as 'row',
       gap: 5
     },
     logo: {

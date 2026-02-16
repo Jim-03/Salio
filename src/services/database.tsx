@@ -47,7 +47,7 @@ export const DatabaseProvider = ({children}: {children: React.ReactNode}): React
 
   if (!isInitialized) {
     return <Modal>
-      <View style={styles.screenBackground}>
+      <View style={{...styles.screenBackground, justifyContent: 'center', alignItems: 'center', flexDirection: 'row'}}>
         <Text style={styles.logo}>Salio</Text>
         <Loading color={'#2E8B57FF'}/>
       </View>
