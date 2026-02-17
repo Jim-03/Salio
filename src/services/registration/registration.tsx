@@ -1,5 +1,5 @@
-import { JSX, useState } from 'react';
-import { Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { JSX, useEffect, useRef, useState } from 'react';
+import { Animated, Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
 import useAppStyles from '../../utils/styles';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 
@@ -10,31 +10,41 @@ import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 const Registration = (): JSX.Element => {
   const [view, setView] = useState(1);
   const appStyles = useAppStyles();
+  const slideAnim = useRef(new Animated.Value(-100)).current;
 
-  if (view === 1) return (
-    <View style={{...appStyles.screenBackground}}>
-      <Image source={require('../../../assets/icon.png')} style={styles.registrationIcon}/>
-      <Text style={appStyles.heading}>Welcome to Salio!</Text>
-      <Text style={{...appStyles.text, paddingLeft: 10}}>An analysis tool for your M-Pesa transactions</Text>
-      <View style={styles.featureContainer}>
-        <View style={{...appStyles.container, ...styles.feature}}>
-          <Text style={appStyles.text}>Trend based categorization</Text>
-          <MaterialIcons name="auto-awesome" size={24} style={styles.featureIcon}/>
-        </View>
-        <View style={{...appStyles.container, ...styles.feature}}>
-          <Text style={appStyles.text}>Graphed transactions</Text>
-          <MaterialIcons name="auto-graph" size={24} style={styles.featureIcon}/>
-        </View>
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      useNativeDriver: true,
+      duration: 500
+    }).start();
+  }, [slideAnim]);
+
+  let screen: JSX.Element = <></>;
+
+  if (view === 1) screen = <View style={{...appStyles.screenBackground}}>
+    <Image source={require('../../../assets/icon.png')} style={styles.registrationIcon}/>
+    <Text style={appStyles.heading}>Welcome to Salio!</Text>
+    <Text style={{...appStyles.text, paddingLeft: 10}}>An analysis tool for your M-Pesa transactions</Text>
+    <View style={styles.featureContainer}>
+      <View style={{...appStyles.container, ...styles.feature}}>
+        <Text style={appStyles.text}>Trend based categorization</Text>
+        <MaterialIcons name="auto-awesome" size={24} style={styles.featureIcon}/>
       </View>
-      <NextButton setView={() => setView(2)}/>
+      <View style={{...appStyles.container, ...styles.feature}}>
+        <Text style={appStyles.text}>Graphed transactions</Text>
+        <MaterialIcons name="auto-graph" size={24} style={styles.featureIcon}/>
+      </View>
     </View>
-  );
+    <NextButton setView={() => setView(2)}/>
+  </View>;
+
   /**
    * TODO
    * Import SMS
    * User authentication
    */
-  return <View></View>;
+  return <Animated.View style={{flex: 1, transform: [{translateX: slideAnim}]}}>{screen}</Animated.View>;
 
 };
 
