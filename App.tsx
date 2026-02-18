@@ -1,20 +1,45 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
+import { useEffect, useState } from 'react';
+import useAppStyles from './src/utils/styles';
+import { ThemeProvider, useTheme } from './src/services/theme';
+import { AsyncStorage } from 'expo-sqlite/kv-store';
+import Registration from './src/services/registration/registration';
+import { DatabaseProvider } from './src/services/database';
+import MessageProvider from './src/services/messages';
 
-export default function App() {
+/**
+ * The apps main content to be displayed
+ */
+function MainContent() {
+  const [isRegistered, setIsRegistered] = useState(false);
+  const styles = useAppStyles();
+
+  /**
+   * Hook to check if the app has ever been opened
+   */
+  useEffect(() => {
+    const getRegistration = async () => {
+      const data = await AsyncStorage.getItem('isRegistered');
+      if (data) setIsRegistered(JSON.parse(data));
+    };
+    getRegistration();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
+    <View style={styles.screenBackground}>
+      {!isRegistered && <Registration setIsRegistered={() => setIsRegistered(true)}/>}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  return (
+    <ThemeProvider>
+      <DatabaseProvider>
+        <MessageProvider>
+          <MainContent/>
+        </MessageProvider>
+      </DatabaseProvider>
+    </ThemeProvider>
+  );
+}
