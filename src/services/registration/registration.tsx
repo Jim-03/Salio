@@ -11,12 +11,18 @@ import {
 } from 'react-native';
 import useAppStyles from '../../utils/styles';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import * as LocalAuthentication from 'expo-local-authentication';
+import { AsyncStorage } from 'expo-sqlite/kv-store';
+
+interface RegistrationProps {
+  setIsRegistered: () => void;
+}
 
 /**
  * Welcome screen
  * @returns {JSX.Element} A reusable component that renders the welcome screen dialog
  */
-const Registration = (): JSX.Element => {
+const Registration = ({setIsRegistered}: RegistrationProps): JSX.Element => {
   const [view, setView] = useState(1);
   const appStyles = useAppStyles();
   const slideAnim = useRef(new Animated.Value(300)).current;
@@ -39,10 +45,18 @@ const Registration = (): JSX.Element => {
     console.log('Result:', granted);
     if (granted === PermissionsAndroid.RESULTS.DENIED) Alert.alert('Permission Denied', 'Salio requires SMS permission for normal operation');
     else setView(3);
-    /**
-     * TODO: Import sms and categorize
-     *
-     */
+  };
+
+  /**
+   * Authenticates the user to access the system
+   */
+  const authenticateUser = async () => {
+    const isAuthenticate = await LocalAuthentication.authenticateAsync();
+
+    if (isAuthenticate) {
+      await AsyncStorage.setItem('isRegistered', JSON.stringify(true));
+      setIsRegistered()
+    }
   };
 
   let screen: JSX.Element = <></>;
@@ -75,7 +89,18 @@ const Registration = (): JSX.Element => {
         </View>
       </TouchableWithoutFeedback>
     </View>;
-
+  } else {
+    screen = <View style={{flex: 1}}>
+      <Text style={appStyles.heading}>Authentication</Text>
+      <Text style={[appStyles.text, {textAlign: 'center'}]}>Salio is always locked to protect your financial data from
+        unwanted hands</Text>
+      <TouchableWithoutFeedback onPress={authenticateUser}>
+        <View style={styles.grantPermissionButton}>
+          <Text style={{color: 'white', fontSize: 17}}>Authenticate</Text>
+          <MaterialIcons name="fingerprint" size={24} color="white"/>
+        </View>
+      </TouchableWithoutFeedback>
+    </View>;
   }
 
   /**
