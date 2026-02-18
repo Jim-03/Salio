@@ -1,5 +1,14 @@
 import { JSX, useEffect, useRef, useState } from 'react';
-import { Animated, Image, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  Alert,
+  Animated,
+  Image,
+  PermissionsAndroid,
+  StyleSheet,
+  Text,
+  TouchableWithoutFeedback,
+  View
+} from 'react-native';
 import useAppStyles from '../../utils/styles';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 
@@ -38,22 +47,36 @@ const Registration = (): JSX.Element => {
 
   let screen: JSX.Element = <></>;
 
-  if (view === 1) screen = <View style={{...appStyles.screenBackground}}>
-    <Image source={require('../../../assets/icon.png')} style={styles.registrationIcon}/>
-    <Text style={appStyles.heading}>Welcome to Salio!</Text>
-    <Text style={{...appStyles.text, paddingLeft: 10}}>An analysis tool for your M-Pesa transactions</Text>
-    <View style={styles.featureContainer}>
-      <View style={{...appStyles.container, ...styles.feature}}>
-        <Text style={appStyles.text}>Trend based categorization</Text>
-        <MaterialIcons name="auto-awesome" size={24} style={styles.featureIcon}/>
+  if (view === 1) {
+    screen = <View style={{flex: 1}}>
+      <Text style={appStyles.heading}>Welcome to Salio!</Text>
+      <Text style={{...appStyles.text, paddingLeft: 10}}>An analysis tool for your M-Pesa transactions</Text>
+      <View style={styles.featureContainer}>
+        <View style={{...appStyles.container, ...styles.feature}}>
+          <Text style={appStyles.text}>Trend based categorization</Text>
+          <MaterialIcons name="auto-awesome" size={24} style={styles.featureIcon}/>
+        </View>
+        <View style={{...appStyles.container, ...styles.feature}}>
+          <Text style={appStyles.text}>Graphed transactions</Text>
+          <MaterialIcons name="auto-graph" size={24} style={styles.featureIcon}/>
+        </View>
       </View>
-      <View style={{...appStyles.container, ...styles.feature}}>
-        <Text style={appStyles.text}>Graphed transactions</Text>
-        <MaterialIcons name="auto-graph" size={24} style={styles.featureIcon}/>
-      </View>
-    </View>
-    <NextButton setView={() => setView(2)}/>
-  </View>;
+      <NextButton setView={() => setView(2)}/>
+    </View>;
+  } else if (view === 2) {
+    screen = <View style={{flex: 1}}>
+      <Text style={appStyles.heading}>Message Permission</Text>
+      <Text style={[appStyles.text, {textAlign: 'center', marginTop: 10}]}>Salio requires your permission to read
+        SMS</Text>
+      <TouchableWithoutFeedback onPress={requestPermission}>
+        <View style={styles.grantPermissionButton}>
+          <Text style={{color: 'white', fontSize: 17}}>Grant</Text>
+          <MaterialIcons name="handshake" size={24} color="white"/>
+        </View>
+      </TouchableWithoutFeedback>
+    </View>;
+
+  }
 
   /**
    * TODO
@@ -133,6 +156,19 @@ const styles = StyleSheet.create({
   featureIcon: {
     position: 'absolute',
     right: 10
+  },
+  grantPermissionButton: {
+    backgroundColor: 'seagreen',
+    width: '50%',
+    marginHorizontal: 'auto',
+    marginTop: 20,
+    borderRadius: 20,
+    flexDirection: 'row',
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    elevation: 5
   }
 
 });
