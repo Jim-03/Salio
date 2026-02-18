@@ -10,15 +10,17 @@ import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 const Registration = (): JSX.Element => {
   const [view, setView] = useState(1);
   const appStyles = useAppStyles();
-  const slideAnim = useRef(new Animated.Value(-100)).current;
+  const slideAnim = useRef(new Animated.Value(300)).current;
 
   useEffect(() => {
+    slideAnim.setValue(300);
     Animated.timing(slideAnim, {
       toValue: 0,
       useNativeDriver: true,
       duration: 500
     }).start();
   }, [slideAnim]);
+  }, [view]);
 
   let screen: JSX.Element = <></>;
 
