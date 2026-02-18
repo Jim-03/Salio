@@ -19,8 +19,22 @@ const Registration = (): JSX.Element => {
       useNativeDriver: true,
       duration: 500
     }).start();
-  }, [slideAnim]);
   }, [view]);
+
+  /**
+   * Requests permission to read sms messages
+   */
+  const requestPermission = async () => {
+    console.log('Requesting permission');
+    let granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_SMS);
+    console.log('Result:', granted);
+    if (granted === PermissionsAndroid.RESULTS.DENIED) Alert.alert('Permission Denied', 'Salio requires SMS permission for normal operation');
+    else setView(3);
+    /**
+     * TODO: Import sms and categorize
+     *
+     */
+  };
 
   let screen: JSX.Element = <></>;
 
@@ -46,7 +60,10 @@ const Registration = (): JSX.Element => {
    * Import SMS
    * User authentication
    */
-  return <Animated.View style={{flex: 1, transform: [{translateX: slideAnim}]}}>{screen}</Animated.View>;
+  return <View style={appStyles.screenBackground}>
+    <Image source={require('../../../assets/icon.png')} style={styles.registrationIcon}/>
+    <Animated.View style={{transform: [{translateX: slideAnim}], flex: 1}}>{screen}</Animated.View>
+  </View>;
 
 };
 
