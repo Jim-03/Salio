@@ -1,11 +1,12 @@
-import { View } from 'react-native';
-import { useEffect, useState } from 'react';
+import { AppState, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
 import useAppStyles from './src/utils/styles';
-import { ThemeProvider, useTheme } from './src/services/theme';
+import { ThemeProvider } from './src/services/theme';
 import { AsyncStorage } from 'expo-sqlite/kv-store';
 import Registration from './src/services/registration/registration';
 import { DatabaseProvider } from './src/services/database';
 import MessageProvider from './src/services/messages';
+import Authenticate from './src/pages/authentication';
 
 /**
  * The apps main content to be displayed
@@ -13,6 +14,21 @@ import MessageProvider from './src/services/messages';
 function MainContent() {
   const [isRegistered, setIsRegistered] = useState(false);
   const styles = useAppStyles();
+  const [isLocked, setIsLocked] = useState(true);
+  const timeOut = useRef(0);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') {
+        timeOut.current = Date.now();
+      } else if (state === 'active') {
+        if (Date.now() - timeOut.current > ( 1000 * 5 )) {
+          setIsLocked(true);
+        }
+      }
+    });
+    return () => subscription.remove();
+  }, []);
 
   /**
    * Hook to check if the app has ever been opened
@@ -28,6 +44,7 @@ function MainContent() {
   return (
     <View style={styles.screenBackground}>
       {!isRegistered && <Registration setIsRegistered={() => setIsRegistered(true)}/>}
+      {isRegistered && isLocked && <Authenticate setIsLocked={() => setIsLocked(false)}/>}
     </View>
   );
 }
