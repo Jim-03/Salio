@@ -23,7 +23,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.Salio"
+      "package": "com.anonymous.Salio",
+      "permissions": ["READ_SMS"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
