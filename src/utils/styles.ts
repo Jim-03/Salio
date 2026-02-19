@@ -1,5 +1,5 @@
 import { useTheme } from '../services/theme';
-import { FlexAlignType } from 'react-native';
+import { DimensionValue } from 'react-native';
 
 /**
  * App's UI styling
@@ -10,7 +10,7 @@ const useAppStyles = () => {
   return {
     screenBackground: {
       backgroundColor: systemTheme === 'light' ? 'rgb(245, 245, 245)' : 'rgb(0, 0, 0)',
-      flex: 1,
+      height: '100%' as DimensionValue,
       gap: 5
     },
     logo: {
