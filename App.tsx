@@ -7,6 +7,7 @@ import Registration from './src/services/registration/registration';
 import { DatabaseProvider } from './src/services/database';
 import MessageProvider from './src/services/messages';
 import Authenticate from './src/pages/authentication';
+import Main from './src/pages/main';
 
 /**
  * The apps main content to be displayed
@@ -45,6 +46,7 @@ function MainContent() {
     <View style={styles.screenBackground}>
       {!isRegistered && <Registration setIsRegistered={() => setIsRegistered(true)}/>}
       {isRegistered && isLocked && <Authenticate setIsLocked={() => setIsLocked(false)}/>}
+      {isRegistered && !isLocked && <Main/>}
     </View>
   );
 }
