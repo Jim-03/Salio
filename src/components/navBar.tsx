@@ -72,6 +72,12 @@ const NavBar = ({activeButton, setActiveButton}: NavBarProps) => {
       action: () => {
         setActiveButton('Review');
       }
+    }, {
+      name: 'Settings',
+      icon: <MaterialIcons name="settings" style={[styles.text, styles.buttonIcon]}/>,
+      action: () => {
+        setActiveButton('Settings');
+      }
     }
   ];
 
