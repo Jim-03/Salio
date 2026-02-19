@@ -22,7 +22,7 @@ function MainContent() {
       if (state !== 'active') {
         timeOut.current = Date.now();
       } else if (state === 'active') {
-        if (Date.now() - timeOut.current > ( 1000 * 5 )) {
+        if (Date.now() - timeOut.current > ( 1000 * 60 )) {
           setIsLocked(true);
         }
       }
