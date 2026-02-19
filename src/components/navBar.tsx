@@ -19,13 +19,13 @@ const NavBar = ({activeButton, setActiveButton}: NavBarProps) => {
 
   const styles = StyleSheet.create({
     navBar: {
-      position: 'absolute',
+      position: 'relative',
       bottom: 0,
       width: '95%',
       flexDirection: 'row',
       justifyContent: 'space-evenly',
       paddingVertical: 10,
-      marginVertical: 10,
+      marginBottom: 10,
       borderRadius: 10,
       borderColor: 'rgba(0, 0, 0, 0.1)',
       borderWidth: 1,
