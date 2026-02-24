@@ -4,14 +4,16 @@ import { Fontisto } from '@expo/vector-icons';
 
 interface LoadingProps {
   color: string;
+  size?: number
 }
 
 /**
  * Spinning cog animation
  * @param color The cog's color
+ * @param size The size of the icon
  * @returns {JSX.Element} A reusable document that displays a spinning cog animation
  */
-export function Loading({color}: LoadingProps): JSX.Element {
+export function Loading({color, size}: LoadingProps): JSX.Element {
   const loadAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -40,7 +42,7 @@ export function Loading({color}: LoadingProps): JSX.Element {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-        <Fontisto name={'spinner-cog'} style={{fontSize: 50, color: color}}/>
+        <Fontisto name={'spinner-cog'} style={{fontSize: size ? size : 50, color: color}}/>
       </Animated.View>
     </View>
   </View>
