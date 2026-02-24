@@ -8,6 +8,7 @@ import { DatabaseProvider } from './src/services/database';
 import MessageProvider from './src/services/messages';
 import Authenticate from './src/pages/authentication';
 import Main from './src/pages/main';
+import Classifier from './src/utils/classifier';
 
 /**
  * The apps main content to be displayed
@@ -52,6 +53,12 @@ function MainContent() {
 }
 
 export default function App() {
+  const classifier = new Classifier()
+
+  useEffect(() => {
+    classifier.init();
+  }, []);
+
   return (
     <ThemeProvider>
       <DatabaseProvider>
