@@ -20,6 +20,7 @@ const HomeBanner = () => {
       backgroundColor:
         theme === "light" ? "seagreen" : "rgba(255, 255, 255, 0.3)",
       height: 200,
+      marginTop: 5,
       borderRadius: 20,
       paddingVertical: 10,
       justifyContent: "center",
