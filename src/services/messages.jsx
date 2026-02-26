@@ -7,24 +7,25 @@ import {
   useState,
 } from "react";
 import SmsAndroid from "react-native-get-sms-android";
-import Classifier from "../utils/classifier";
+import { storeNewMessages } from "../utils/database";
+import { useDB } from "./database";
 
 const MessageContext = createContext();
 
 /**
  * Provider for message context
  * @param children Components depending on the message context
+ * @param classifier Classifier instance
  * @returns {React.JSX.Element} A component that provides message context to child elements
  */
-const MessageProvider = ({ children }) => {
+const MessageProvider = ({ children, classifier }) => {
   const [isImporting, setIsImporting] = useState(false);
   const [messagesList, setMessagesList] = useState([""]);
-  const [featureList, setFeatureList] = useState([]);
-  const classifier = useRef(new Classifier());
+  const db = useDB();
 
   /**
    * Imports all messages sent by mpesa to store it locally
-   * TODO: Fetch from last imported sms and store in database
+   * TODO: Fetch from last imported sms
    */
   const importSms = useCallback(() => {
     setIsImporting(true);
@@ -57,8 +58,9 @@ const MessageProvider = ({ children }) => {
         });
 
         setMessagesList(messages);
-        setFeatureList(features);
+        console.log("Adding new transactions to the database");
         setIsImporting(false);
+        await storeNewMessages(db, features);
       },
     );
   }, []);
