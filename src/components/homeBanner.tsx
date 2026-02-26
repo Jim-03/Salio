@@ -12,7 +12,10 @@ const HomeBanner = (): JSX.Element => {
   const [income, setIncome] = useState(0); // TODO: Fetch annual income
   const [expense, setExpense] = useState(0); // TODO: Fetch annual expense
   const theme = useTheme();
-  const { balance, isImporting } = useSms();
+  const { balance, isImporting } = useSms() as {
+    balance: number;
+    isImporting: boolean;
+  };
 
   const styles = StyleSheet.create({
     background: {
