@@ -24,13 +24,21 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.Salio",
-      "permissions": ["READ_SMS"]
+      "permissions": [
+        "READ_SMS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-sqlite"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e63c2a2c-411e-4cf1-b34d-6ad6f19e4a7c"
+      }
+    },
+    "owner": "JIMNC"
   }
 }
