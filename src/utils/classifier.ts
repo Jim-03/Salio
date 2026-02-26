@@ -24,7 +24,7 @@ export default class Classifier {
    * Fetches the required categories and weight data for the classifier
    * @returns {Promise<void>} A promise that resolves when the data is fetched
    */
-  public init = async (): Promise<void> => {
+  public  init = async (): Promise<void> => {
     try {
       const storedCats = await AsyncStorage.getItem('categories');
       if (storedCats) {
@@ -50,6 +50,7 @@ export default class Classifier {
           weights[`${this.categories[i]}`] = categoryWeights;
         }
         this.weights = weights;
+        await AsyncStorage.setItem('weights', JSON.stringify(this.weights));
       }
       console.log('Classifier Initialized');
     } catch (error) {
@@ -77,7 +78,7 @@ export default class Classifier {
 
     const categories = Object.keys(scores);
     const probabilities = Object.values(scores);
-    const highestProbability = Math.max(...Object.values(probabilities));
+    const highestProbability = Math.max(...probabilities);
 
     return "AI_" + categories[probabilities.indexOf(highestProbability)];
   };
