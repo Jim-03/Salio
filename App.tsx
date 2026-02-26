@@ -53,16 +53,16 @@ function MainContent() {
 }
 
 export default function App() {
-  const classifier = new Classifier()
+  const classifier = useRef(new Classifier())
 
   useEffect(() => {
-    classifier.init();
+    classifier.current.init()
   }, []);
 
   return (
     <ThemeProvider>
       <DatabaseProvider>
-        <MessageProvider>
+        <MessageProvider classifier={classifier.current}>
           <MainContent/>
         </MessageProvider>
       </DatabaseProvider>
