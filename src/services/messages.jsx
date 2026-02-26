@@ -43,19 +43,27 @@ const MessageProvider = ({ children, classifier }) => {
           fail,
         );
       },
-      (_count, smsList) => {
+      async (count, smsList) => {
         const parsedList = JSON.parse(smsList);
         const messages = [];
         const features = [];
 
-        parsedList.forEach((m) => {
-          const messageString = m.body;
-          messages.push(messageString);
-          features.push({
-            ...classifier.current.extractFeatures(messageString),
-            category: classifier.current.predict(messageString),
-          });
-        });
+        for (let i = 0; i < count; i++) {
+          const messageString = parsedList[i].body;
+          const transactionFeatures = {
+            ...classifier.extractFeatures(messageString),
+            category: classifier.predict(messageString),
+            message: messageString,
+          };
+          if (
+            transactionFeatures.merchant &&
+            transactionFeatures.amount &&
+            transactionFeatures.date
+          ) {
+            messages.push(messageString);
+            features.push(transactionFeatures);
+          }
+        }
 
         setMessagesList(messages);
         console.log("Adding new transactions to the database");
@@ -71,7 +79,6 @@ const MessageProvider = ({ children, classifier }) => {
    */
   const balance = useMemo(() => {
     let balance = 0;
-    console.log("New messages:", featureList.length);
 
     for (let i = 0; i < messagesList.length; i++) {
       const balanceMatch = messagesList[i].match(
