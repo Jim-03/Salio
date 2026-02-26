@@ -12,7 +12,7 @@ export interface TransactionRecord extends message {
  * @param m Message features
  * @returns {string}Transaction type
  */
-function getTransactionType(m: message) {
+function getTransactionType(m: message): string {
   if (m.isWithdraw === 1) {
     return "Withdrawal";
   } else if (m.isBuyGoods === 1) {
