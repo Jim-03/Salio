@@ -2,12 +2,13 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import SmsAndroid from "react-native-get-sms-android";
-import { storeNewMessages } from "../utils/database";
+import { getLastTransactionDate, storeNewMessages } from "../utils/database";
 import { useDB } from "./database";
 
 const MessageContext = createContext();
@@ -22,6 +23,17 @@ const MessageProvider = ({ children, classifier }) => {
   const [isImporting, setIsImporting] = useState(false);
   const [messagesList, setMessagesList] = useState([""]);
   const db = useDB();
+  const [lastTransactionDate, setLastTransactionDate] = useState(null);
+
+  /**
+   * Hook to fetch the date of the last transaction stored in the database
+   */
+  useEffect(() => {
+    const loadData = async () => {
+      setLastTransactionDate(await getLastTransactionDate(db));
+    };
+    loadData();
+  }, []);
 
   /**
    * Imports all messages sent by mpesa to store it locally
@@ -29,10 +41,16 @@ const MessageProvider = ({ children, classifier }) => {
    */
   const importSms = useCallback(() => {
     setIsImporting(true);
-    const filters = {
-      address: "MPESA",
-      box: "inbox",
-    };
+    const filters = lastTransactionDate
+      ? {
+          address: "MPESA",
+          box: "inbox",
+          minDate: lastTransactionDate.getTime(),
+        }
+      : {
+          address: "MPESA",
+          box: "inbox",
+        };
 
     SmsAndroid.list(
       JSON.stringify(filters),
@@ -68,10 +86,15 @@ const MessageProvider = ({ children, classifier }) => {
         setMessagesList(messages);
         console.log("Adding new transactions to the database");
         setIsImporting(false);
+
+        if (lastTransactionDate) {
+          features.pop();
+        }
+
         await storeNewMessages(db, features.reverse());
       },
     );
-  }, []);
+  }, [lastTransactionDate]);
 
   /**
    * Retrieves the user's MPESA balance
