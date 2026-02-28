@@ -13,7 +13,7 @@ export interface TransactionRecord extends message {
  * @param m Message features
  * @returns {string}Transaction type
  */
-function getTransactionType(m: message) {
+function getTransactionType(m: message): string {
   if (m.isWithdraw === 1) {
     return "Withdrawal";
   } else if (m.isBuyGoods === 1) {
@@ -93,4 +93,23 @@ export const getLastTransactionDate = async (
     transaction.transaction_date,
     transaction.transaction_time,
   );
+};
+
+/**
+ * Retrieves the user's MPESA balance
+ * @param db {SQLite.SQLiteDatabase} SQLite instance
+ * @returns User's MPESA balance
+ */
+export const getLastBalance = async (
+  db: SQLite.SQLiteDatabase,
+): Promise<number> => {
+  const result = (await db.getFirstAsync(`
+    SELECT message FROM transactions
+    ORDER BY id DESC
+    LIMIT 1
+    `)) as { message: string };
+  const balanceMatch = result.message.match(
+    /.*balance is Ksh([\d,]+\.\d{1,2})/,
+  );
+  return balanceMatch ? Number(balanceMatch[1]) : 0;
 };
