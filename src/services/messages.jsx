@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import SmsAndroid from "react-native-get-sms-android";
-import { getLastTransactionDate, storeNewMessages } from "../utils/database";
+import { getLastBalance, getLastTransactionDate, storeNewMessages } from "../utils/database";
 import { useDB } from "./database";
 
 const MessageContext = createContext();
@@ -24,6 +24,7 @@ const MessageProvider = ({ children, classifier }) => {
   const [messagesList, setMessagesList] = useState([""]);
   const db = useDB();
   const [lastTransactionDate, setLastTransactionDate] = useState(null);
+  const [balance, setBalance] = useState(0)
 
   /**
    * Hook to fetch the date of the last transaction stored in the database
@@ -31,9 +32,10 @@ const MessageProvider = ({ children, classifier }) => {
   useEffect(() => {
     const loadData = async () => {
       setLastTransactionDate(await getLastTransactionDate(db));
+      setBalance(await getLastBalance(db))
     };
     loadData();
-  }, []);
+  }, [db]);
 
   /**
    * Imports all messages sent by mpesa to store it locally
@@ -95,26 +97,6 @@ const MessageProvider = ({ children, classifier }) => {
       },
     );
   }, [lastTransactionDate]);
-
-  /**
-   * Retrieves the user's MPESA balance
-   * @type {number} The user's MPESA balance
-   */
-  const balance = useMemo(() => {
-    let balance = 0;
-
-    for (let i = 0; i < messagesList.length; i++) {
-      const balanceMatch = messagesList[i].match(
-        /.*balance is Ksh([\d,]+\.\d{1,2})/,
-      );
-      if (balanceMatch) {
-        balance = balanceMatch[1].replace(/,/g, "");
-        break;
-      }
-    }
-
-    return Number(balance);
-  }, [messagesList]);
 
   return (
     <MessageContext.Provider value={{ importSms, balance, isImporting }}>
