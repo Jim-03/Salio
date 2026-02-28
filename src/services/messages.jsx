@@ -68,7 +68,7 @@ const MessageProvider = ({ children, classifier }) => {
         setMessagesList(messages);
         console.log("Adding new transactions to the database");
         setIsImporting(false);
-        await storeNewMessages(db, features);
+        await storeNewMessages(db, features.reverse());
       },
     );
   }, []);
