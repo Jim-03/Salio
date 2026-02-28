@@ -74,3 +74,23 @@ export const storeNewMessages = async (
     }
   });
 };
+
+/**
+ * Retrieves the date of the very last transaction
+ * @param db {SQLite.SQLiteDatabase} SQLite instance
+ * @returns {Promise<Date>} Promise that resolves to the date of the last transaction
+ */
+export const getLastTransactionDate = async (
+  db: SQLite.SQLiteDatabase,
+): Promise<Date> => {
+  const transaction = (await db.getFirstAsync(`
+    SELECT transaction_date, transaction_time FROM transactions
+    ORDER BY id DESC
+    LIMIT 1
+    `)) as { transaction_date: string; transaction_time: string };
+
+  return getDateFromString(
+    transaction.transaction_date,
+    transaction.transaction_time,
+  );
+};
