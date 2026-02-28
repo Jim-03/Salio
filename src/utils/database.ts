@@ -3,6 +3,7 @@ import { message } from "./classifier";
 import { getDateFromString } from "./date";
 
 export interface TransactionRecord extends message {
+  id: number;
   message: string;
   category: string;
 }
