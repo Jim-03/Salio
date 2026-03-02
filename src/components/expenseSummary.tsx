@@ -75,7 +75,9 @@ const ExpenseSummary = (): JSX.Element => {
 
   return (
     <View style={styles.background}>
-      <Text style={[appStyles.text, { fontWeight: "bold" }]}>This month</Text>
+      <Text style={[appStyles.text, { fontWeight: "bold", opacity: 0.7 }]}>
+        This month
+      </Text>
       <View style={styles.summaryContainer}>
         <View style={[appStyles.container, styles.containers]}>
           <Text style={[appStyles.text, styles.label]}>Top Expense</Text>
