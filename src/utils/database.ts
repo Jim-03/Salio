@@ -3,6 +3,9 @@ import { message } from "./classifier";
 import { getDateFromString } from "./date";
 
 export interface TransactionRecord extends message {
+  direction: 'IN' | 'OUT';
+  transaction_time: string;
+  transaction_date: string;
   id: number;
   message: string;
   category: string;
@@ -191,3 +194,12 @@ export const getMonthlyAverageUsage = async (
   `)) as { average_usage: number };
   return result.average_usage;
 };
+
+export const getLast5Transactions = async (db: SQLite.SQLiteDatabase) => {
+  return await db.getAllAsync(`
+      SELECT *
+      FROM transactions
+      ORDER BY id DESC
+      LIMIT 5
+  `) as TransactionRecord[]
+}
