@@ -147,3 +147,47 @@ export const getTotalExpensePerYear = async (
     `)) as { total: number };
   return amount.total;
 };
+
+/**
+ * Retrieves the category most spent on in the current month
+ * @param db SQLite instance
+ * @returns {Promise<string>} A promise that resolves to the category name
+ */
+export const getMonthlyExpense = async (
+  db: SQLite.SQLiteDatabase,
+): Promise<string> => {
+  const todayDate = new Date();
+  const currentMonth = String(todayDate.getMonth() + 1).padStart(2, "0");
+  const currentYear = todayDate.getFullYear();
+
+  const result = (await db.getFirstAsync(`
+      SELECT sum(amount) AS total_amount, category
+      FROM transactions
+      WHERE transaction_date LIKE '%/${currentMonth}/${currentYear}%'
+        AND direction = 'OUT'
+      GROUP BY category
+      ORDER BY total_amount DESC
+  `)) as { category: string; totalAmount: number };
+  return result.category.replace("AI_", "");
+};
+
+/**
+ * Retrieves the average amount of money being sent in the current month
+ * @param db SQLite instance
+ * @returns {Promise<number>} A promise that resolves to the monthly average
+ */
+export const getMonthlyAverageUsage = async (
+  db: SQLite.SQLiteDatabase,
+): Promise<number> => {
+  const todayDate = new Date();
+  const currentMonth = String(todayDate.getMonth() + 1).padStart(2, "0");
+  const currentYear = todayDate.getFullYear();
+
+  const result = (await db.getFirstAsync(`
+      SELECT AVG(amount) AS average_usage
+      FROM transactions
+      WHERE transaction_date LIKE '%/${currentMonth}/${currentYear}'
+        AND direction = 'OUT'
+  `)) as { average_usage: number };
+  return result.average_usage;
+};
