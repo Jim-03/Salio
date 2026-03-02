@@ -17,7 +17,7 @@ export function getDateFromString(date: string, time: string): Date {
   }
 
   return new Date(
-    Number(year) + 2000,
+    Number(year) - 2000 < 0 ? Number(year) + 2000 : Number(year),
     Number(month) - 1,
     Number(day),
     hour,
