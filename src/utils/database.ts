@@ -3,7 +3,7 @@ import { message } from "./classifier";
 import { getDateFromString } from "./date";
 
 export interface TransactionRecord extends message {
-  direction: 'IN' | 'OUT';
+  direction: "IN" | "OUT";
   transaction_time: string;
   transaction_date: string;
   id: number;
@@ -81,21 +81,30 @@ export const storeNewMessages = async (
 /**
  * Retrieves the date of the very last transaction
  * @param db {SQLite.SQLiteDatabase} SQLite instance
- * @returns {Promise<Date>} Promise that resolves to the date of the last transaction
+ * @returns {Promise<Date>} Promise that resolves to the date of the last transaction or null in case the latest transaction isn't found
  */
 export const getLastTransactionDate = async (
   db: SQLite.SQLiteDatabase,
-): Promise<Date> => {
-  const transaction = (await db.getFirstAsync(`
-    SELECT transaction_date, transaction_time FROM transactions
-    ORDER BY id DESC
-    LIMIT 1
+): Promise<Date | null> => {
+  try {
+    const transaction = (await db.getFirstAsync(`
+        SELECT transaction_date, transaction_time
+        FROM transactions
+        ORDER BY id DESC
+        LIMIT 1
     `)) as { transaction_date: string; transaction_time: string };
 
-  return getDateFromString(
-    transaction.transaction_date,
-    transaction.transaction_time,
-  );
+    if (!transaction.transaction_date || !transaction.transaction_time)
+      return null;
+
+    return getDateFromString(
+      transaction.transaction_date,
+      transaction.transaction_time,
+    );
+  } catch (e) {
+    console.error("An error has occurred while retrieving the last date: ", e);
+    return null;
+  }
 };
 
 /**
@@ -196,10 +205,10 @@ export const getMonthlyAverageUsage = async (
 };
 
 export const getLast5Transactions = async (db: SQLite.SQLiteDatabase) => {
-  return await db.getAllAsync(`
+  return (await db.getAllAsync(`
       SELECT *
       FROM transactions
       ORDER BY id DESC
       LIMIT 5
-  `) as TransactionRecord[]
-}
+  `)) as TransactionRecord[];
+};
