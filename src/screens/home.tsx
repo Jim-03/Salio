@@ -1,10 +1,7 @@
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
-import { JSX, useEffect, useState } from "react";
+import { JSX } from "react";
 import HomeBanner from "../components/homeBanner";
 import ExpenseSummary from "../components/expenseSummary";
-import { getLast5Transactions, TransactionRecord } from "../utils/database";
-import { useDB } from "../services/database";
-import Review from "../components/review";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../services/theme";
 import HomeReview from "../components/homeReview";
