@@ -9,11 +9,15 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../services/theme";
 import HomeReview from "../components/homeReview";
 
+interface HomeProps {
+  setToReviewScreen: () => void;
+}
+
 /**
  * Home page
  * @returns {JSX.Element} A reusable component that renders the home page
  */
-const Home = (): JSX.Element => {
+const Home = ({ setToReviewScreen }: HomeProps): JSX.Element => {
   const theme = useTheme();
 
   const styles = StyleSheet.create({
@@ -36,7 +40,7 @@ const Home = (): JSX.Element => {
       <ExpenseSummary />
       <View style={styles.labelContainer}>
         <Text style={styles.labelText}>Latest Transactions</Text>
-        <TouchableWithoutFeedback>
+        <TouchableWithoutFeedback onPress={setToReviewScreen}>
           <View style={{ flexDirection: "row", gap: 3, alignItems: "center" }}>
             <Text style={styles.labelText}>View All</Text>
             <MaterialCommunityIcons

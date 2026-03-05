@@ -23,7 +23,9 @@ const Main = () => {
       <SafeAreaView>
         <View style={[{ alignItems: "center" }, appStyles.screenBackground]}>
           <View style={{ flex: 1, width: "95%", margin: 5 }}>
-            {activeButton === "Home" && <Home />}
+            {activeButton === "Home" && (
+              <Home setToReviewScreen={() => setActiveButton("Review")} />
+            )}
           </View>
           <NavBar
             activeButton={activeButton}
