@@ -5,6 +5,7 @@ import useAppStyles from "../utils/styles";
 import { useEffect, useState } from "react";
 import Home from "../screens/home";
 import { useSms } from "../services/messages";
+import Review from "../screens/review";
 
 /**
  * Main page
@@ -26,6 +27,7 @@ const Main = () => {
             {activeButton === "Home" && (
               <Home setToReviewScreen={() => setActiveButton("Review")} />
             )}
+            {activeButton === "Review" && <Review />}
           </View>
           <NavBar
             activeButton={activeButton}
