@@ -7,24 +7,14 @@ import { useDB } from "../services/database";
 import Review from "../components/review";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../services/theme";
+import HomeReview from "../components/homeReview";
 
 /**
  * Home page
  * @returns {JSX.Element} A reusable component that renders the home page
  */
 const Home = (): JSX.Element => {
-  const [last5Transactions, setLast5Transactions] = useState<
-    TransactionRecord[]
-  >([]);
-  const db = useDB();
   const theme = useTheme();
-
-  useEffect(() => {
-    const loadData = async () => {
-      setLast5Transactions(await getLast5Transactions(db));
-    };
-    loadData();
-  }, []);
 
   const styles = StyleSheet.create({
     labelContainer: {
@@ -58,7 +48,7 @@ const Home = (): JSX.Element => {
           </View>
         </TouchableWithoutFeedback>
       </View>
-      <Review transactions={last5Transactions} />
+      <HomeReview />
     </View>
   );
 };
