@@ -1,5 +1,6 @@
 import { View } from "react-native";
 import ReviewHeader from "../components/reviewHeader";
+import Transactions from "../components/transactions";
 
 /**
  * A screen component that renders a list of transactions
@@ -9,8 +10,11 @@ import ReviewHeader from "../components/reviewHeader";
  */
 const Review = () => {
   return (
-    <View>
+    <View style={{
+      flex: 1
+    }}>
       <ReviewHeader />
+      <Transactions />
     </View>
   );
 };
