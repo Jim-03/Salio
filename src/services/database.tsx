@@ -26,7 +26,7 @@ export const DatabaseProvider = ({children}: {children: React.ReactNode}): React
             CREATE TABLE IF NOT EXISTS transactions
             (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                transaction_code TEXT NOT NULL,
+                transaction_code TEXT NOT NULL UNIQUE,
                 merchant TEXT NOT NULL,
                 transaction_type TEXT NOT NULL,
                 transaction_date TEXT NOT NULL,

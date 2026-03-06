@@ -42,20 +42,21 @@ export const storeNewMessages = async (
 ) => {
   await db.withExclusiveTransactionAsync(async (tx) => {
     const preparedStatement = await tx.prepareAsync(`
-            INSERT INTO transactions
+            INSERT OR IGNORE INTO transactions
             (transaction_code, merchant, transaction_type, transaction_date, transaction_time, amount, transaction_cost,
              direction, message, category)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
     try {
+      let inserted = 0
       for (const transaction of newMessages) {
         const dateTime = getDateFromString(
           transaction.date as string,
           transaction.time as string,
         );
 
-        await preparedStatement.executeAsync([
+        const result = await preparedStatement.executeAsync([
           transaction.message.split(" ")[0],
           transaction.merchant,
           getTransactionType(transaction),
@@ -67,8 +68,10 @@ export const storeNewMessages = async (
           transaction.message,
           transaction.category,
         ]);
+
+        inserted += result.changes
       }
-      console.log(`Successfully added ${newMessages.length} transactions`);
+      console.log(`Successfully added ${inserted} transactions`);
     } catch (e) {
       console.error("An error has occurred while adding the transactions: ", e);
       throw e;
