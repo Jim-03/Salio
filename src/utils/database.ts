@@ -207,6 +207,10 @@ export const getMonthlyAverageUsage = async (
   return result.average_usage;
 };
 
+/**
+ * Retrieve last 5 transactions
+ * @param db SQLite database instance
+ */
 export const getLast5Transactions = async (db: SQLite.SQLiteDatabase) => {
   return (await db.getAllAsync(`
       SELECT *
