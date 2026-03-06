@@ -8,6 +8,18 @@ import useAppStyles from "../utils/styles";
 import { getDateFromString } from "../utils/date";
 
 /**
+ * Extracts initials from merchant's name
+ * @param name Merchant's name
+ * @returns One/Two lettered initials
+ */
+export const getInitials = (name: string) => {
+  const listOfNames = name.split(/\s+/);
+  if (listOfNames[0].toUpperCase() === "AIRTIME") return "A";
+
+  return `${listOfNames[0][0]}${listOfNames[1] ? listOfNames[1][0] : ""} `;
+};
+
+/**
  * Transaction review
  * @returns A reusable component that renders 5 rows of the latest transactions
  */
@@ -26,18 +38,6 @@ const HomeReview = () => {
     };
     loadData();
   }, [isImporting]);
-
-  /**
-   * Extracts initials from merchant's name
-   * @param name Merchant's name
-   * @returns One/Two lettered initials
-   */
-  const getInitials = (name: string) => {
-    const listOfNames = name.split(/\s+/);
-    if (listOfNames[0].toUpperCase() === "AIRTIME") return "A";
-
-    return `${listOfNames[0][0]}${listOfNames[1] ? listOfNames[1][0] : ""} `;
-  };
 
   const transactionStyles = StyleSheet.create({
     transactionRow: {
