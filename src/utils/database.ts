@@ -49,7 +49,7 @@ export const storeNewMessages = async (
         `);
 
     try {
-      let inserted = 0
+      let inserted = 0;
       for (const transaction of newMessages) {
         const dateTime = getDateFromString(
           transaction.date as string,
@@ -69,7 +69,7 @@ export const storeNewMessages = async (
           transaction.category,
         ]);
 
-        inserted += result.changes
+        inserted += result.changes;
       }
       console.log(`Successfully added ${inserted} transactions`);
     } catch (e) {
@@ -218,4 +218,26 @@ export const getLast5Transactions = async (db: SQLite.SQLiteDatabase) => {
       ORDER BY id DESC
       LIMIT 5
   `)) as TransactionRecord[];
+};
+
+/**
+ * Retrieve a paginated list of all transactions
+ * @param db SQLite database instance
+ * @param offset Number of rows to skip
+ * @param sort Sort direction
+ */
+export const getAllTransactions = async (
+  db: SQLite.SQLiteDatabase,
+  offset: number,
+  sort: "ASC" | "DESC",
+) => {
+  return (await db.getAllAsync(
+    `
+      SELECT *
+      FROM transactions
+      ORDER BY id ${sort}
+      LIMIT 10 OFFSET ?
+  `,
+    [offset],
+  )) as TransactionRecord[];
 };
