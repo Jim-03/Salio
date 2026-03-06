@@ -28,7 +28,7 @@ const ReviewHeader = () => {
     },
     background: {
       flexDirection: "row",
-      height: "30%",
+      height: "8%",
       alignItems: "center",
     },
     searchBar: {
