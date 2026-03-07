@@ -3,6 +3,9 @@ import { message } from "./classifier";
 import { getDateFromString } from "./date";
 
 export interface TransactionRecord extends message {
+  direction: "IN" | "OUT";
+  transaction_time: string;
+  transaction_date: string;
   id: number;
   message: string;
   category: string;
@@ -39,20 +42,21 @@ export const storeNewMessages = async (
 ) => {
   await db.withExclusiveTransactionAsync(async (tx) => {
     const preparedStatement = await tx.prepareAsync(`
-            INSERT INTO transactions
+            INSERT OR IGNORE INTO transactions
             (transaction_code, merchant, transaction_type, transaction_date, transaction_time, amount, transaction_cost,
              direction, message, category)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
     try {
+      let inserted = 0;
       for (const transaction of newMessages) {
         const dateTime = getDateFromString(
           transaction.date as string,
           transaction.time as string,
         );
 
-        await preparedStatement.executeAsync([
+        const result = await preparedStatement.executeAsync([
           transaction.message.split(" ")[0],
           transaction.merchant,
           getTransactionType(transaction),
@@ -64,8 +68,10 @@ export const storeNewMessages = async (
           transaction.message,
           transaction.category,
         ]);
+
+        inserted += result.changes;
       }
-      console.log(`Successfully added ${newMessages.length} transactions`);
+      console.log(`Successfully added ${inserted} transactions`);
     } catch (e) {
       console.error("An error has occurred while adding the transactions: ", e);
       throw e;
@@ -78,21 +84,30 @@ export const storeNewMessages = async (
 /**
  * Retrieves the date of the very last transaction
  * @param db {SQLite.SQLiteDatabase} SQLite instance
- * @returns {Promise<Date>} Promise that resolves to the date of the last transaction
+ * @returns {Promise<Date>} Promise that resolves to the date of the last transaction or null in case the latest transaction isn't found
  */
 export const getLastTransactionDate = async (
   db: SQLite.SQLiteDatabase,
-): Promise<Date> => {
-  const transaction = (await db.getFirstAsync(`
-    SELECT transaction_date, transaction_time FROM transactions
-    ORDER BY id DESC
-    LIMIT 1
+): Promise<Date | null> => {
+  try {
+    const transaction = (await db.getFirstAsync(`
+        SELECT transaction_date, transaction_time
+        FROM transactions
+        ORDER BY id DESC
+        LIMIT 1
     `)) as { transaction_date: string; transaction_time: string };
 
-  return getDateFromString(
-    transaction.transaction_date,
-    transaction.transaction_time,
-  );
+    if (!transaction.transaction_date || !transaction.transaction_time)
+      return null;
+
+    return getDateFromString(
+      transaction.transaction_date,
+      transaction.transaction_time,
+    );
+  } catch (e) {
+    console.error("An error has occurred while retrieving the last date: ", e);
+    return null;
+  }
 };
 
 /**
@@ -112,4 +127,117 @@ export const getLastBalance = async (
     /.*balance is Ksh([\d,]+\.\d{1,2})/,
   );
   return balanceMatch ? Number(balanceMatch[1]) : 0;
+};
+
+/**
+ * Retrieves the user's total income in a year
+ * @param db {SQLite.SQLiteDatabase} SQLite database instance
+ * @param year Year to be summed
+ * @returns {Promise<number>} A promise that resolves to the total income
+ */
+export const getTotalIncomePerYear = async (
+  db: SQLite.SQLiteDatabase,
+  year = new Date().getFullYear(),
+): Promise<number> => {
+  const amount = (await db.getFirstAsync(`
+    SELECT SUM(amount) AS total FROM transactions
+    WHERE transaction_date LIKE '%${year}' AND direction='IN'
+    `)) as { total: number };
+  return amount.total;
+};
+
+/**
+ * Retrieves the user's total expense in a year
+ * @param db {SQLite.SQLiteDatabase} SQLite database instance
+ * @param year Year to be summed
+ * @returns {Promise<number>} A promise that resolves to the total expense
+ */
+export const getTotalExpensePerYear = async (
+  db: SQLite.SQLiteDatabase,
+  year = new Date().getFullYear(),
+): Promise<number> => {
+  const amount = (await db.getFirstAsync(`
+    SELECT SUM(amount) AS total FROM transactions
+    WHERE transaction_date LIKE '%${year}' AND direction='OUT'
+    `)) as { total: number };
+  return amount.total;
+};
+
+/**
+ * Retrieves the category most spent on in the current month
+ * @param db SQLite instance
+ * @returns {Promise<string>} A promise that resolves to the category name
+ */
+export const getMonthlyExpense = async (
+  db: SQLite.SQLiteDatabase,
+): Promise<string> => {
+  const todayDate = new Date();
+  const currentMonth = String(todayDate.getMonth() + 1).padStart(2, "0");
+  const currentYear = todayDate.getFullYear();
+
+  const result = (await db.getFirstAsync(`
+      SELECT sum(amount) AS total_amount, category
+      FROM transactions
+      WHERE transaction_date LIKE '%/${currentMonth}/${currentYear}%'
+        AND direction = 'OUT'
+      GROUP BY category
+      ORDER BY total_amount DESC
+  `)) as { category: string; totalAmount: number };
+  return result.category.replace("AI_", "");
+};
+
+/**
+ * Retrieves the average amount of money being sent in the current month
+ * @param db SQLite instance
+ * @returns {Promise<number>} A promise that resolves to the monthly average
+ */
+export const getMonthlyAverageUsage = async (
+  db: SQLite.SQLiteDatabase,
+): Promise<number> => {
+  const todayDate = new Date();
+  const currentMonth = String(todayDate.getMonth() + 1).padStart(2, "0");
+  const currentYear = todayDate.getFullYear();
+
+  const result = (await db.getFirstAsync(`
+      SELECT AVG(amount) AS average_usage
+      FROM transactions
+      WHERE transaction_date LIKE '%/${currentMonth}/${currentYear}'
+        AND direction = 'OUT'
+  `)) as { average_usage: number };
+  return result.average_usage;
+};
+
+/**
+ * Retrieve last 5 transactions
+ * @param db SQLite database instance
+ */
+export const getLast5Transactions = async (db: SQLite.SQLiteDatabase) => {
+  return (await db.getAllAsync(`
+      SELECT *
+      FROM transactions
+      ORDER BY id DESC
+      LIMIT 5
+  `)) as TransactionRecord[];
+};
+
+/**
+ * Retrieve a paginated list of all transactions
+ * @param db SQLite database instance
+ * @param offset Number of rows to skip
+ * @param sort Sort direction
+ */
+export const getAllTransactions = async (
+  db: SQLite.SQLiteDatabase,
+  offset: number,
+  sort: "ASC" | "DESC",
+) => {
+  return (await db.getAllAsync(
+    `
+      SELECT *
+      FROM transactions
+      ORDER BY id ${sort}
+      LIMIT 10 OFFSET ?
+  `,
+    [offset],
+  )) as TransactionRecord[];
 };

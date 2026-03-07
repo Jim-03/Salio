@@ -8,7 +8,11 @@ import {
   useState,
 } from "react";
 import SmsAndroid from "react-native-get-sms-android";
-import { getLastBalance, getLastTransactionDate, storeNewMessages } from "../utils/database";
+import {
+  getLastBalance,
+  getLastTransactionDate,
+  storeNewMessages,
+} from "../utils/database";
 import { useDB } from "./database";
 
 const MessageContext = createContext();
@@ -24,7 +28,6 @@ const MessageProvider = ({ children, classifier }) => {
   const [messagesList, setMessagesList] = useState([""]);
   const db = useDB();
   const [lastTransactionDate, setLastTransactionDate] = useState(null);
-  const [balance, setBalance] = useState(0)
 
   /**
    * Hook to fetch the date of the last transaction stored in the database
@@ -32,7 +35,6 @@ const MessageProvider = ({ children, classifier }) => {
   useEffect(() => {
     const loadData = async () => {
       setLastTransactionDate(await getLastTransactionDate(db));
-      setBalance(await getLastBalance(db))
     };
     loadData();
   }, [db]);
@@ -87,19 +89,19 @@ const MessageProvider = ({ children, classifier }) => {
 
         setMessagesList(messages);
         console.log("Adding new transactions to the database");
-        setIsImporting(false);
 
         if (lastTransactionDate) {
           features.pop();
         }
 
         await storeNewMessages(db, features.reverse());
+        setIsImporting(false);
       },
     );
   }, [lastTransactionDate]);
 
   return (
-    <MessageContext.Provider value={{ importSms, balance, isImporting }}>
+    <MessageContext.Provider value={{ importSms, isImporting }}>
       {children}
     </MessageContext.Provider>
   );

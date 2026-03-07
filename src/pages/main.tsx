@@ -5,6 +5,7 @@ import useAppStyles from "../utils/styles";
 import { useEffect, useState } from "react";
 import Home from "../screens/home";
 import { useSms } from "../services/messages";
+import Review from "../screens/review";
 
 /**
  * Main page
@@ -23,7 +24,10 @@ const Main = () => {
       <SafeAreaView>
         <View style={[{ alignItems: "center" }, appStyles.screenBackground]}>
           <View style={{ flex: 1, width: "95%", margin: 5 }}>
-            {activeButton === "Home" && <Home />}
+            {activeButton === "Home" && (
+              <Home setToReviewScreen={() => setActiveButton("Review")} />
+            )}
+            {activeButton === "Review" && <Review />}
           </View>
           <NavBar
             activeButton={activeButton}

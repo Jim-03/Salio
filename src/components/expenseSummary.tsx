@@ -1,7 +1,10 @@
-import { JSX, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { JSX, useEffect, useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { useTheme } from "../services/theme";
 import useAppStyles from "../utils/styles";
+import { getMonthlyAverageUsage, getMonthlyExpense } from "../utils/database";
+import { useDB } from "../services/database";
+import { useSms } from "../services/messages";
 
 /**
  * Displays the summary 0f the past 30 days
@@ -14,6 +17,35 @@ const ExpenseSummary = (): JSX.Element => {
   const [averageExpense, setAverageExpense] = useState(0);
   const theme = useTheme();
   const appStyles = useAppStyles();
+  const db = useDB();
+  const [isLoading, setIsLoading] = useState(false);
+  const { isImporting } = useSms();
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (isImporting) return;
+      setIsLoading(true);
+      try {
+        const [expense, average] = await Promise.all([
+          getMonthlyExpense(db),
+          getMonthlyAverageUsage(db),
+        ]);
+        if (expense && average) {
+          setTopExpense(expense);
+          setAverageExpense(average);
+        }
+        setIsLoading(false);
+      } catch (e) {
+        console.error(
+          "An error has occurred while loading the expense summary data:",
+          e,
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [isImporting]);
 
   const styles = StyleSheet.create({
     background: {
@@ -43,22 +75,38 @@ const ExpenseSummary = (): JSX.Element => {
 
   return (
     <View style={styles.background}>
-      <Text style={[appStyles.text, { fontWeight: "bold" }]}>
-        30 day summary
+      <Text style={[appStyles.text, { fontWeight: "bold", opacity: 0.7 }]}>
+        This month
       </Text>
       <View style={styles.summaryContainer}>
         <View style={[appStyles.container, styles.containers]}>
           <Text style={[appStyles.text, styles.label]}>Top Expense</Text>
-          <Text style={[appStyles.text, { fontWeight: "bold" }]}>
-            {topExpense}
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator
+              size={20}
+              color={theme === "light" ? "black" : "white"}
+            />
+          ) : (
+            <Text style={[appStyles.text, { fontWeight: "bold" }]}>
+              {topExpense}
+            </Text>
+          )}
         </View>
         <View style={[appStyles.container, styles.containers]}>
           <Text style={[appStyles.text, styles.label]}>Average usage</Text>
-          <Text style={[appStyles.text, { fontWeight: "bold" }]}>
-            Ksh.
-            {averageExpense.toLocaleString("KE", { maximumFractionDigits: 0 })}
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator
+              size={20}
+              color={theme === "light" ? "black" : "white"}
+            />
+          ) : (
+            <Text style={[appStyles.text, { fontWeight: "bold" }]}>
+              Ksh.
+              {averageExpense.toLocaleString("KE", {
+                maximumFractionDigits: 0,
+              })}
+            </Text>
+          )}
         </View>
       </View>
     </View>
