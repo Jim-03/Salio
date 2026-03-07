@@ -124,7 +124,7 @@ export const getLastBalance = async (
   const balanceMatch = result.message.match(
     /.*balance is Ksh([\d,]+\.\d{1,2})/,
   );
-  return balanceMatch ? Number(balanceMatch[1]) : 0;
+  return balanceMatch ? Number(balanceMatch[1].replace(",", "")) : 0;
 };
 
 /**
