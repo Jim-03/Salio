@@ -19,9 +19,7 @@ const HomeBanner = (): JSX.Element => {
   const [expense, setExpense] = useState(0);
   const [balance, setBalance] = useState(0);
   const theme = useTheme();
-  const { isImporting } = useSms() as {
-    isImporting: boolean;
-  };
+  const { isImporting } = useSms();
   const [isLoading, setIsLoading] = useState(false);
   const db = useDB();
 

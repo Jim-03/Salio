@@ -112,7 +112,7 @@ export default MessageProvider;
 
 /**
  * Creates the context variables
- * @returns {unknown} an object containing the context variables
+ * @returns {{isImporting: boolean, importSms: function}} an object containing the context variables
  */
 export const useSms = () => {
   const sms = useContext(MessageContext);
