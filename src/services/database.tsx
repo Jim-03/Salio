@@ -28,6 +28,7 @@ export const DatabaseProvider = ({children}: {children: React.ReactNode}): React
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 transaction_code TEXT NOT NULL UNIQUE,
                 merchant TEXT NOT NULL,
+                timestamp REAL NOT NULL,
                 transaction_type TEXT NOT NULL,
                 transaction_date TEXT NOT NULL,
                 transaction_time TEXT NOT NULL,

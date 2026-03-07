@@ -76,6 +76,7 @@ const MessageProvider = ({ children, classifier }) => {
             ...classifier.extractFeatures(messageString),
             category: classifier.predict(messageString),
             message: messageString,
+            timestamp: Number(parsedList[i].date),
           };
           if (
             transactionFeatures.merchant &&
