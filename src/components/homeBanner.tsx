@@ -35,7 +35,11 @@ const HomeBanner = (): JSX.Element => {
           getTotalIncomePerYear(db),
           getTotalExpensePerYear(db),
         ]);
-        if (balanceEstimate && totalIncome && totalExpense) {
+        if (
+          balanceEstimate !== undefined &&
+          totalIncome !== undefined &&
+          totalExpense !== undefined
+        ) {
           setIncome(totalIncome);
           setExpense(totalExpense);
           setBalance(balanceEstimate);
