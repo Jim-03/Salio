@@ -13,6 +13,7 @@ import useAppStyles from '../../utils/styles';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { AsyncStorage } from 'expo-sqlite/kv-store';
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface RegistrationProps {
   setIsRegistered: () => void;
@@ -108,10 +109,12 @@ const Registration = ({setIsRegistered}: RegistrationProps): JSX.Element => {
    * Import SMS
    * User authentication
    */
-  return <View style={appStyles.screenBackground}>
-    <Image source={require('../../../assets/icon.png')} style={styles.registrationIcon}/>
-    <Animated.View style={{transform: [{translateX: slideAnim}], flex: 1}}>{screen}</Animated.View>
-  </View>;
+  return <SafeAreaView>
+    <View style={appStyles.screenBackground}>
+      <Image source={require('../../../assets/icon.png')} style={styles.registrationIcon}/>
+      <Animated.View style={{transform: [{translateX: slideAnim}], flex: 1}}>{screen}</Animated.View>
+    </View>
+  </SafeAreaView>;
 
 };
 
