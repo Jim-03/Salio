@@ -1,5 +1,4 @@
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -66,8 +65,10 @@ const ReviewHeader = ({
         <View style={styles.mainBar}>
           <TouchableWithoutFeedback
             onPress={() => {
-              setSearchTerm("");
-              setFilters((prev) => ({ ...prev, searchTerm: "" }));
+              if (searchTerm) {
+                setSearchTerm("");
+                setFilters((prev) => ({ ...prev, searchTerm: "" }));
+              }
               setIsSearching(false);
             }}
           >
@@ -85,7 +86,10 @@ const ReviewHeader = ({
             <MaterialIcons
               name="search"
               style={styles.icons}
-              onPress={() => setFilters((prev) => ({ ...prev, searchTerm }))}
+              onPress={() => {
+                if (!searchTerm) return;
+                setFilters((prev) => ({ ...prev, searchTerm }));
+              }}
             />
           </View>
         </View>
