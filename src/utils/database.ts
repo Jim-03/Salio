@@ -246,15 +246,16 @@ export const getAllTransactions = async (
   const sortCriteria = sortBy.includes("Amount")
     ? "amount"
     : "transaction_timestamp";
+  const merchant = filters.searchTerm ? `%${filters.searchTerm.trim()}%` : "%";
 
   return (await db.getAllAsync(
     `
       SELECT *
       FROM transactions
-      WHERE category LIKE UPPER(?) AND direction LIKE ?
+      WHERE UPPER(merchant) LIKE UPPER(?) AND category LIKE UPPER(?) AND direction LIKE ?
       ORDER BY ${sortCriteria} ${sort}
       LIMIT 10 OFFSET ?
   `,
-    [category, direction, offset],
+    [merchant, category, direction, offset],
   )) as TransactionRecord[];
 };

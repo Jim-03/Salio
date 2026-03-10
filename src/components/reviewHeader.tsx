@@ -32,6 +32,7 @@ const ReviewHeader = ({
 }: ReviewHeaderProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const appStyles = useAppStyles();
   const theme = useTheme();
   const styles = StyleSheet.create({
@@ -63,7 +64,13 @@ const ReviewHeader = ({
     <View style={styles.background}>
       {isSearching ? (
         <View style={styles.mainBar}>
-          <TouchableWithoutFeedback onPress={() => setIsSearching(false)}>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setSearchTerm("");
+              setFilters((prev) => ({ ...prev, searchTerm: "" }));
+              setIsSearching(false);
+            }}
+          >
             <MaterialIcons
               name="close"
               style={[styles.icons, { paddingRight: 5 }]}
@@ -73,13 +80,13 @@ const ReviewHeader = ({
             <TextInput
               placeholder={"Enter merchant name"}
               style={{ flex: 1 }}
+              onChangeText={setSearchTerm}
             />
             <MaterialIcons
               name="search"
               style={styles.icons}
-              onPress={() => Alert.alert("Search to be implemented soon!")}
+              onPress={() => setFilters((prev) => ({ ...prev, searchTerm }))}
             />
-            {/*TODO: Implement search functionality*/}
           </View>
         </View>
       ) : (

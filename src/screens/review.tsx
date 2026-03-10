@@ -6,6 +6,7 @@ import { useState } from "react";
 export interface Filters {
   category: string;
   direction: "IN" | "OUT" | "ALL";
+  searchTerm: string;
 }
 
 /**
@@ -18,6 +19,7 @@ const Review = () => {
   const [filters, setFilters] = useState<Filters>({
     category: "ALL",
     direction: "ALL",
+    searchTerm: "",
   });
   const [sortBy, setSortBy] = useState("Latest");
 
