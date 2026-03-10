@@ -28,10 +28,11 @@ const MessageProvider = ({ children, classifier }) => {
    */
   useEffect(() => {
     const loadData = async () => {
+      if (isImporting) return;
       setLastTransactionDate(await getLastTransactionDate(db));
     };
     loadData();
-  }, [db]);
+  }, [db, isImporting]);
 
   /**
    * Imports all messages sent by mpesa to store it locally
