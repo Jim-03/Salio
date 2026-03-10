@@ -31,6 +31,7 @@ export const DatabaseProvider = ({children}: {children: React.ReactNode}): React
                 transaction_type TEXT NOT NULL,
                 transaction_date TEXT NOT NULL,
                 transaction_time TEXT NOT NULL,
+                transaction_timestamp REAL NOT NULL,
                 amount REAL NOT NULL,
                 transaction_cost REAL NOT NULL,
                 direction TEXT NOT NULL,

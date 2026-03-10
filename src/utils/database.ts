@@ -9,6 +9,7 @@ export interface TransactionRecord extends message {
   id: number;
   message: string;
   category: string;
+  transaction_timestamp: number;
 }
 
 /**
@@ -44,17 +45,14 @@ export const storeNewMessages = async (
     const preparedStatement = await tx.prepareAsync(`
             INSERT OR IGNORE INTO transactions
             (transaction_code, merchant, transaction_type, transaction_date, transaction_time, amount, transaction_cost,
-             direction, message, category)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             direction, message, category, transaction_timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)
         `);
 
     try {
       let inserted = 0;
       for (const transaction of newMessages) {
-        const dateTime = getDateFromString(
-          transaction.date as string,
-          transaction.time as string,
-        );
+        const dateTime = new Date(transaction.transaction_timestamp);
 
         const result = await preparedStatement.executeAsync([
           transaction.message.split(" ")[0],
@@ -67,6 +65,7 @@ export const storeNewMessages = async (
           transaction.incoming === 1 ? "IN" : "OUT",
           transaction.message,
           transaction.category,
+          transaction.transaction_timestamp,
         ]);
 
         inserted += result.changes;
@@ -91,19 +90,15 @@ export const getLastTransactionDate = async (
 ): Promise<Date | null> => {
   try {
     const transaction = (await db.getFirstAsync(`
-        SELECT transaction_date, transaction_time
+        SELECT transaction_timestamp
         FROM transactions
-        ORDER BY id DESC
+        ORDER BY transaction_timestamp DESC
         LIMIT 1
-    `)) as { transaction_date: string; transaction_time: string };
+    `)) as { transaction_timestamp: number };
 
-    if (!transaction.transaction_date || !transaction.transaction_time)
-      return null;
+    if (!transaction || !transaction.transaction_timestamp) return null;
 
-    return getDateFromString(
-      transaction.transaction_date,
-      transaction.transaction_time,
-    );
+    return new Date(transaction.transaction_timestamp);
   } catch (e) {
     console.error("An error has occurred while retrieving the last date: ", e);
     return null;
@@ -120,7 +115,7 @@ export const getLastBalance = async (
 ): Promise<number> => {
   const result = (await db.getFirstAsync(`
     SELECT message FROM transactions
-    ORDER BY id DESC
+    ORDER BY transaction_timestamp DESC
     LIMIT 1
     `)) as { message: string };
   const balanceMatch = result.message.match(
@@ -215,7 +210,7 @@ export const getLast5Transactions = async (db: SQLite.SQLiteDatabase) => {
   return (await db.getAllAsync(`
       SELECT *
       FROM transactions
-      ORDER BY id DESC
+      ORDER BY transaction_timestamp DESC
       LIMIT 5
   `)) as TransactionRecord[];
 };
@@ -235,7 +230,7 @@ export const getAllTransactions = async (
     `
       SELECT *
       FROM transactions
-      ORDER BY id ${sort}
+      ORDER BY transaction_timestamp ${sort}
       LIMIT 10 OFFSET ?
   `,
     [offset],

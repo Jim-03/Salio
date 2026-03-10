@@ -3,16 +3,10 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
-  useRef,
   useState,
 } from "react";
 import SmsAndroid from "react-native-get-sms-android";
-import {
-  getLastBalance,
-  getLastTransactionDate,
-  storeNewMessages,
-} from "../utils/database";
+import { getLastTransactionDate, storeNewMessages } from "../utils/database";
 import { useDB } from "./database";
 
 const MessageContext = createContext();
@@ -76,6 +70,7 @@ const MessageProvider = ({ children, classifier }) => {
             ...classifier.extractFeatures(messageString),
             category: classifier.predict(messageString),
             message: messageString,
+            transaction_timestamp: parsedList[i].date,
           };
           if (
             transactionFeatures.merchant &&
