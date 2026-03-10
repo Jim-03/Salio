@@ -14,6 +14,7 @@ import { useDB } from "../services/database";
 import { getInitials } from "./homeReview";
 import { MaterialIcons } from "@expo/vector-icons";
 import { getDateFromString } from "../utils/date";
+import { Filters } from "../screens/review";
 
 /**
  * Memoized component to display transaction details
@@ -134,16 +135,20 @@ const TransactionRow = memo(({ item }: { item: TransactionRecord }) => {
   );
 });
 
+interface TransactionsProps {
+  filters: Filters;
+  sortBy: string;
+}
+
 /**
  * Display a list of transactions
  * @returns A reusable component that renders a list of transaction row components
  */
-const Transactions = () => {
+const Transactions = ({ filters, sortBy }: TransactionsProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [offset, setOffset] = useState(0);
-  const [sort, setSort] = useState<"ASC" | "DESC">("DESC");
   const theme = useTheme();
   const db = useDB();
 
@@ -157,7 +162,7 @@ const Transactions = () => {
     }
 
     try {
-      const data = await getAllTransactions(db, offset, sort);
+      const data = await getAllTransactions(db, offset, sortBy, filters);
       if (data) {
         setTransactions((prev) => {
           if (offset === 0) return data;
@@ -176,8 +181,13 @@ const Transactions = () => {
   };
 
   useEffect(() => {
+    setOffset(0);
+    setTransactions([]);
+  }, [filters, sortBy]);
+
+  useEffect(() => {
     loadData();
-  }, [sort, offset]);
+  }, [offset, filters]);
 
   const styles = StyleSheet.create({
     background: {

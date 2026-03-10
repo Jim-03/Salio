@@ -10,13 +10,28 @@ import useAppStyles from "../utils/styles";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { useTheme } from "../services/theme";
+import { Filters } from "../screens/review";
+import FilterTransaction from "./filterTransactions";
+
+interface ReviewHeaderProps {
+  setFilters: (value: ((prevState: Filters) => Filters) | Filters) => void;
+  setSortBy: (value: ((prevState: string) => string) | string) => void;
+  filters: Filters;
+  sortBy: string;
+}
 
 /**
  * Review Header
  * @returns A reusable component that renders the header in the review screen
  */
-const ReviewHeader = () => {
+const ReviewHeader = ({
+  setFilters,
+  setSortBy,
+  filters,
+  sortBy,
+}: ReviewHeaderProps) => {
   const [isSearching, setIsSearching] = useState(false);
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const appStyles = useAppStyles();
   const theme = useTheme();
   const styles = StyleSheet.create({
@@ -81,9 +96,17 @@ const ReviewHeader = () => {
       <MaterialIcons
         name="filter-list-alt"
         style={[styles.icons, { paddingLeft: 5 }]}
-        onPress={() => Alert.alert("Filters to be implemented soon")}
+        onPress={() => setShowFilterMenu(true)}
       />
-      {/*TODO: Implement filter functionality*/}
+      {showFilterMenu && (
+        <FilterTransaction
+          hideFilterMenu={() => setShowFilterMenu(false)}
+          setFilters={setFilters}
+          setSortBy={setSortBy}
+          filters={filters}
+          sortBy={sortBy}
+        />
+      )}
     </View>
   );
 };

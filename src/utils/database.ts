@@ -1,6 +1,6 @@
 import * as SQLite from "expo-sqlite";
 import { message } from "./classifier";
-import { getDateFromString } from "./date";
+import { Filters } from "../screens/review";
 
 export interface TransactionRecord extends message {
   direction: "IN" | "OUT";
@@ -221,18 +221,40 @@ export const getLast5Transactions = async (db: SQLite.SQLiteDatabase) => {
  * @param offset Number of rows to skip
  * @param sort Sort direction
  */
+/**
+ * Retrieve a paginated list of all transactions
+ * @param db SQLite database instance
+ * @param offset Number of rows to skip
+ * @param sortBy {"Highest Amount" | "Least Amount" | "Latest" | "Oldest"} Direction to sort transactions
+ * @param filters Object that contains transaction filters
+ */
 export const getAllTransactions = async (
   db: SQLite.SQLiteDatabase,
   offset: number,
-  sort: "ASC" | "DESC",
+  sortBy: string,
+  filters: Filters,
 ) => {
+  const sort =
+    sortBy.includes("Highest") || sortBy === "Latest" ? "DESC" : "ASC";
+  const category =
+    filters.category === "ALL"
+      ? "%"
+      : filters.category === "AI"
+        ? "AI_%"
+        : `%${filters.category}`;
+  const direction = filters.direction === "ALL" ? "%" : filters.direction;
+  const sortCriteria = sortBy.includes("Amount")
+    ? "amount"
+    : "transaction_timestamp";
+
   return (await db.getAllAsync(
     `
       SELECT *
       FROM transactions
-      ORDER BY transaction_timestamp ${sort}
+      WHERE category LIKE UPPER(?) AND direction LIKE ?
+      ORDER BY ${sortCriteria} ${sort}
       LIMIT 10 OFFSET ?
   `,
-    [offset],
+    [category, direction, offset],
   )) as TransactionRecord[];
 };
