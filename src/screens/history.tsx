@@ -80,7 +80,9 @@ const History = () => {
       value: yd.amount / 1000,
       frontColor: direction === "INCOMING" ? "seagreen" : "tomato",
       topLabelComponent: () => (
-        <Text>{(yd.amount / 1000).toFixed(0) + "K"}</Text>
+        <Text style={{ color: theme === "light" ? "black" : "white" }}>
+          {(yd.amount / 1000).toFixed(0) + "K"}
+        </Text>
       ),
     })),
   ];
@@ -211,6 +213,7 @@ const History = () => {
           <LineChart
             data={lineData}
             curved
+            isAnimated
             yAxisLabelSuffix="K"
             width={dimensions.width * 0.7}
             height={dimensions.height * 0.27}
