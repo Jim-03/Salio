@@ -11,13 +11,16 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "expo": "~54.0.33",
+    "expo-linear-gradient": "~15.0.8",
     "expo-local-authentication": "~17.0.8",
     "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
     "react-native": "0.81.5",
     "react-native-get-sms-android": "^2.1.0",
-    "react-native-safe-area-context": "~5.6.0"
+    "react-native-gifted-charts": "^1.4.76",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-svg": "15.12.1"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
