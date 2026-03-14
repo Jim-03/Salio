@@ -259,3 +259,74 @@ export const getAllTransactions = async (
     [merchant, category, direction, offset],
   )) as TransactionRecord[];
 };
+
+/**
+ * Retrieve the total amount per year for the past 5 years
+ * @param db SQLite instance
+ * @param direction The direction of the transaction flow
+ */
+export const getLast5YearSummary = async (
+  db: SQLite.SQLiteDatabase,
+  direction: "INCOMING" | "OUTGOING",
+) => {
+  const currentYear = new Date().getFullYear();
+
+  const yearlySummary = [];
+
+  for (let i = 0; i < 5; i++) {
+    let year = currentYear - i;
+
+    const result = (await db.getFirstAsync(
+      `
+    SELECT SUM(amount) AS total_amount FROM transactions
+    WHERE transaction_date LIKE '%/${year}' AND direction = ?
+    `,
+      [direction === "INCOMING" ? "IN" : "OUT"],
+    )) as { total_amount: number };
+
+    if (result && result.total_amount)
+      yearlySummary.push({
+        label: year.toString(),
+        amount: result.total_amount,
+      });
+  }
+
+  return yearlySummary;
+};
+
+/**
+ * Get the total amount per month for the past 5 months
+ * @param db SQLite instance
+ * @param direction The direction of the transaction flow
+ */
+export const getLast5MonthSummary = async (
+  db: SQLite.SQLiteDatabase,
+  direction: "INCOMING" | "OUTGOING",
+) => {
+  const monthlySummary = [];
+
+  let date = new Date();
+  date.setDate(1);
+
+  for (let i = 0; i < 5; i++) {
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    const result = (await db.getFirstAsync(
+      `
+    SELECT SUM(amount) AS total_amount FROM transactions
+    WHERE transaction_date LIKE '%/${month}/${year}' AND direction = ?
+    `,
+      [direction === "INCOMING" ? "IN" : "OUT"],
+    )) as { total_amount: number | null };
+
+    monthlySummary.push({
+      label: `${month}`,
+      amount: result?.total_amount || 0,
+    });
+
+    date.setMonth(date.getMonth() - 1);
+  }
+
+  return monthlySummary;
+};

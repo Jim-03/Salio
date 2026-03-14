@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Home from "../screens/home";
 import { useSms } from "../services/messages";
 import Review from "../screens/review";
+import History from "../screens/history";
 
 /**
  * Main page
@@ -28,6 +29,7 @@ const Main = () => {
               <Home setToReviewScreen={() => setActiveButton("Review")} />
             )}
             {activeButton === "Review" && <Review />}
+            {activeButton === 'History' && <History />}
           </View>
           <NavBar
             activeButton={activeButton}
