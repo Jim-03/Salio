@@ -65,7 +65,7 @@ export default function Security() {
       const authentication = await LocalAuthentication.authenticateAsync();
       if (authentication.success) {
         // Mark the app as already opened
-        await AsyncStorage.setItem("firstTime", JSON.stringify(true));
+        await AsyncStorage.setItem("firstTime", JSON.stringify(false));
         // Switch to main route
         router.replace("/main");
       }
