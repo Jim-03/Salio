@@ -34,18 +34,19 @@ export default function DatabaseProvider({
         console.log("Connecting to database");
 
         await connection.execAsync(`
-            CREATE TABLE IF NOT EXISTS transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            reference_number TEXT NOT NULL UNIQUE,
-            merchant TEXT NOT NULL,
-            transaction_timestamp TEXT NOT NULL,
-            amount REAL NOT NULL,
-            transaction_cost REAL,
-            direction TEXT,
-            isPaybill REAL NOT NULL,
-            isSendMoney REAL NOT NULL,
-            isBuyGoods REAL NOT NULL,
-            isPochiLaBiashara REAL NOT NULL
+            CREATE TABLE IF NOT EXISTS transactions
+            (
+                id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+                reference_number      TEXT NOT NULL UNIQUE,
+                merchant              TEXT NOT NULL,
+                transaction_timestamp TEXT NOT NULL,
+                amount                REAL NOT NULL,
+                transaction_cost      REAL,
+                direction             TEXT,
+                isPaybill             REAL NOT NULL,
+                isSendMoney           REAL NOT NULL,
+                isBuyGoods            REAL NOT NULL,
+                isReversal            REAL NOT NULL
             );
         `);
         console.log("Database connection successful");
