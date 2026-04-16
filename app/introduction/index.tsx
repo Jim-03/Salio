@@ -106,7 +106,7 @@ export default function Introduction(): JSX.Element {
       {/*Get started button*/}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push("/introduction/security")}
+        onPress={() => router.push("/introduction/message")}
       >
         <MaterialIcons
           name="login"
