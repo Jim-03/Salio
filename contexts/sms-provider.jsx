@@ -1,7 +1,7 @@
 import { addToDatabase } from "@/utils/database";
 import { createContext, useContext, useEffect, useState } from "react";
 import SmsAndroid from "react-native-get-sms-android";
-import ImportSmsCard from "../components/importSmsCard";
+import ImportSmsCard from "../components/import-sms-card";
 import extractTransactionDetails from "../utils/regex-parser";
 import { useDB } from "./database-provider";
 
