@@ -54,3 +54,22 @@ export async function addToDatabase(
     }
   });
 }
+
+/**
+ * Get the latest saved transaction's timestamp
+ * @param {SQLiteDatabase} db SQLite instance
+ * @returns {number} Timestamp or 0 in case no data exists
+ */
+export function getLastTransactionDate(db: SQLiteDatabase): number {
+  const data = db.getFirstSync<{ transaction_timestamp: string; }>(`
+      SELECT transaction_timestamp
+      from transactions
+      ORDER BY transaction_timestamp DESC
+      LIMIT 1
+  `)
+
+  if (data) {
+    return Number(data.transaction_timestamp)
+  }
+  return 0
+}
