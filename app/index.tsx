@@ -12,12 +12,14 @@ import { useEffect, useState, type JSX } from "react";
  */
 export default function (): JSX.Element {
   const [isFirstTime, setIsFirstTime] = useState(true); // State to confirm if the app has ever been opened
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     /**
      * Confirm if the app has ever been opened before
      */
     const checkIfFirstTime = async () => {
+      setIsLoading(true);
       try {
         const data = await AsyncStorage.getItem("firstTime");
 
@@ -30,10 +32,16 @@ export default function (): JSX.Element {
           "An error has occurred while checking if the app has been opened before. Defaulting to first time",
         );
         console.error(error);
+      } finally {
+        setIsLoading(false);
       }
     };
     checkIfFirstTime();
   }, []);
+
+  if (isLoading) {
+    return <></>;
+  }
 
   if (isFirstTime) {
     return <Redirect href={"/introduction"} />;
