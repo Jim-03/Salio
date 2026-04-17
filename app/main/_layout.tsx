@@ -53,7 +53,7 @@ export default function MainLayout(): React.JSX.Element {
           }}
         />
         <Tabs.Screen
-          name="history"
+          name="analytics"
           options={{
             tabBarIcon: ({ color }) => (
               <MaterialIcons
@@ -62,7 +62,7 @@ export default function MainLayout(): React.JSX.Element {
                 style={styles.tabBarIcon}
               />
             ),
-            tabBarLabel: "History",
+            tabBarLabel: "Analytics",
           }}
         />
         <Tabs.Screen
