@@ -1,4 +1,4 @@
-import { addToDatabase } from "@/utils/database";
+import { addToDatabase, getLastTransactionDate } from "@/utils/database";
 import { createContext, useContext, useEffect, useState } from "react";
 import SmsAndroid from "react-native-get-sms-android";
 import ImportSmsCard from "../components/import-sms-card";
@@ -16,9 +16,9 @@ const SmsContext = createContext(false);
  */
 export default function SmsProvider({ children }) {
   const [isImporting, setIsImporting] = useState(false);
-  // TODO: Implement get last transaction date function
-  const lastTransactionDate = null;
+  const [validTransactions, setValidTransactions] = useState(0); // Count the number of valid transactions for UI
   const db = useDB();
+  const lastTransactionDate = getLastTransactionDate(db);
   const SMS_BATCH = 500;
 
   useEffect(() => {
@@ -81,6 +81,8 @@ export default function SmsProvider({ children }) {
             }
           });
           totalRecords += transactions.length;
+          setValidTransactions((prev) => prev + transactions.length);
+
           // Add to database
           await addToDatabase(db, transactions);
           if (count === SMS_BATCH) {
@@ -99,11 +101,16 @@ export default function SmsProvider({ children }) {
     startingTime = Date.now();
     console.log(`Importing transactions`);
     importSms(0);
-  }, [db]);
+  }, [db, lastTransactionDate]);
 
   return (
     <SmsContext value={isImporting}>
-      {isImporting && <ImportSmsCard isLoading={isImporting} />}
+      {isImporting && (
+        <ImportSmsCard
+          isLoading={isImporting}
+          transactions={validTransactions}
+        />
+      )}
       {children}
     </SmsContext>
   );
