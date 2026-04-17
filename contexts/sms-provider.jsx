@@ -19,25 +19,28 @@ export default function SmsProvider({ children }) {
   // TODO: Implement get last transaction date function
   const lastTransactionDate = null;
   const db = useDB();
+  const SMS_BATCH = 500;
 
   useEffect(() => {
+    let totalRecords = 0;
+    let startingTime = 0;
+    let completionTime = 0;
     /**
      * Retrieve all SMS messages from M-Pesa
      */
-    const importSms = () => {
+    const importSms = (startIndex) => {
       setIsImporting(true); // Mount the loading animation
       // If the last transaction date is provided, fetch from that timestamp
-      const filters = lastTransactionDate
-        ? {
-            box: "inbox",
-            minDate: getLastTransactionDate(db),
-            address: "MPESA",
-          }
-        : {
-            // A new app instance
-            box: "inbox",
-            address: "MPESA",
-          };
+      const filters = {
+        box: "inbox",
+        address: "MPESA",
+        indexFrom: startIndex,
+        maxCount: SMS_BATCH,
+      };
+
+      if (lastTransactionDate) {
+        filters.minDate = lastTransactionDate;
+      }
 
       // Fetch the SMS messages
       SmsAndroid.list(
@@ -61,7 +64,6 @@ export default function SmsProvider({ children }) {
         async (count, smsList) => {
           // Parse the JSON string
           const parsedList = JSON.parse(smsList);
-          console.log(`Found ${count} SMS messages from M-Pesa`);
           const transactions = []; // A list of valid transactions
           // Iterate through each JSON object
           parsedList.forEach((pl) => {
@@ -78,13 +80,25 @@ export default function SmsProvider({ children }) {
               transactions.push(details);
             }
           });
+          totalRecords += transactions.length;
           // Add to database
           await addToDatabase(db, transactions);
-          setIsImporting(false); // Stop the animation
+          if (count === SMS_BATCH) {
+            importSms(startIndex + SMS_BATCH);
+          } else {
+            completionTime = Date.now();
+            console.log(`Transaction import completed`);
+            console.log(
+              `Added ${totalRecords} transactions in ${((completionTime - startingTime) / 1000).toFixed(1)} seconds`,
+            );
+            setIsImporting(false); // Stop the animation
+          }
         },
       );
     };
-    importSms();
+    startingTime = Date.now();
+    console.log(`Importing transactions`);
+    importSms(0);
   }, [db]);
 
   return (
