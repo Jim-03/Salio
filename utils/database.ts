@@ -60,16 +60,129 @@ export async function addToDatabase(
  * @param {SQLiteDatabase} db SQLite instance
  * @returns {number} Timestamp or 0 in case no data exists
  */
-export function getLastTransactionDate(db: SQLiteDatabase): number {
-  const data = db.getFirstSync<{ transaction_timestamp: string; }>(`
+export async function getLastTransactionDate(
+  db: SQLiteDatabase,
+): Promise<number> {
+  const data = await db.getFirstAsync<{ transaction_timestamp: string }>(`
       SELECT transaction_timestamp
       from transactions
       ORDER BY transaction_timestamp DESC
       LIMIT 1
-  `)
+  `);
 
   if (data) {
-    return Number(data.transaction_timestamp)
+    return Number(data.transaction_timestamp);
   }
-  return 0
+  return 0;
+}
+
+/**
+ * Retrieve the last stored balance
+ * @param {SQLiteDatabase} db SQLite instance
+ * @returns {Promise<number>} A promise that resolves to the balance
+ */
+export async function getLatestBalance(db: SQLiteDatabase) {
+  const data = await db.getFirstAsync<{ balance: string }>(`
+    SELECT balance FROM transactions
+    ORDER BY transaction_timestamp DESC
+    LIMIT 1
+    `);
+
+  if (data) {
+    return Number(data.balance);
+  }
+  return 0;
+}
+
+/**
+ * Retrieve income and expense of the current month
+ * @param {SQLiteDatabase} db SQLite instance
+ * @returns {Promise<{income: number, expense: number}>} A promise that resolves to the income and expense of the current month
+ */
+export async function getMonthlyOverview(db: SQLiteDatabase) {
+  const now = new Date();
+  const startOfMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1,
+    0,
+    0,
+    0,
+    0,
+  );
+  const incomeData = await db.getFirstAsync<{ total_amount: number }>(`
+    SELECT SUM(amount) as total_amount FROM transactions
+    WHERE direction = "IN" AND transaction_timestamp > ${Number(startOfMonth)}
+    `);
+  const expenseData = await db.getFirstAsync<{ total_amount: number }>(`
+    SELECT SUM(amount) + SUM(transaction_cost) as total_amount FROM transactions
+    WHERE direction = "OUT" AND transaction_timestamp > ${Number(startOfMonth)}
+    `);
+  if (!incomeData || !expenseData) {
+    return {
+      income: 0,
+      expense: 0,
+    };
+  }
+  return {
+    income: incomeData.total_amount,
+    expense: expenseData.total_amount,
+  };
+}
+
+/**
+ * Retrieve the total expense of the past 6 days
+ * @param {SQLiteDatabase} db SQLite instance
+ * @returns {Promise<Record<string: number>>} A promise that results to an object containing a list of the past 6 days and their total expenses
+ */
+export async function getLast6DayExpense(db: SQLiteDatabase) {
+  const now = new Date();
+  const data: Record<string, number> = {};
+  const days = ["SUN", "MON", "TUE", "WED", "THUR", "FRI", "SAT"];
+
+  for (let i = 5; i >= 0; i--) {
+    const targetDate = new Date(now);
+    targetDate.setDate(targetDate.getDate() - i); // JS safely handles month/year boundaries here
+
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const dayData = await db.getFirstAsync<{ total_amount: number | null }>(`
+      SELECT (SUM(amount) + SUM(transaction_cost)) AS total_amount 
+      FROM transactions
+      WHERE direction = "OUT" 
+      AND transaction_timestamp BETWEEN ${Number(startOfDay)} AND ${Number(endOfDay)}
+    `);
+
+    data[days[targetDate.getDay()]] = dayData?.total_amount || 0;
+  }
+  return data;
+}
+
+/**
+ * Retrieve the last 5 transactions
+ * @param {SQLiteDatabase} db SQLite instance
+ * @returns {Promise<{
+    merchant: string;
+    transaction_timestamp: number;
+    amount: number;
+    transaction_cost: number;
+    direction: "IN" | "OUT";
+  }[]>} A promise that resolves to a summary of the last 5 saved transactions
+ */
+export async function getLast5Transactions(db: SQLiteDatabase) {
+  return await db.getAllAsync<{
+    merchant: string;
+    transaction_timestamp: number;
+    amount: number;
+    transaction_cost: number;
+    direction: "IN" | "OUT";
+  }>(`
+  SELECT merchant, transaction_timestamp, amount, transaction_cost, direction FROM transactions
+  ORDER BY transaction_timestamp DESC
+  LIMIT 5
+  `);
 }
