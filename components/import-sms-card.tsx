@@ -33,7 +33,7 @@ export default function ImportSmsCard({
         <View style={[styles.card, { backgroundColor: cardColor }]}>
           <ActivityIndicator color={textColor} size={25} />
           <Text style={[styles.info, { color: textColor }]}>
-            {transactions} {transactions === 1 ? "has" : "have"} been imported
+            Added {transactions} {transactions > 0 ? 'transactions' : 'transaction'}
           </Text>
         </View>
       </View>
