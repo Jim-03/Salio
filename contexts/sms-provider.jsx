@@ -17,9 +17,24 @@ const SmsContext = createContext(false);
 export default function SmsProvider({ children }) {
   const [isImporting, setIsImporting] = useState(false);
   const [validTransactions, setValidTransactions] = useState(0); // Count the number of valid transactions for UI
+  const [lastTransactionDate, setLastTransactionDate] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const db = useDB();
-  const lastTransactionDate = getLastTransactionDate(db);
   const SMS_BATCH = 500;
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (isImporting) return;
+      try {
+        const data = await getLastTransactionDate(db);
+
+        if (data) setLastTransactionDate(data);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [isImporting]);
 
   useEffect(() => {
     let totalRecords = 0;
@@ -29,6 +44,7 @@ export default function SmsProvider({ children }) {
      * Retrieve all SMS messages from M-Pesa
      */
     const importSms = (startIndex) => {
+      if (isLoading) return;
       setIsImporting(true); // Mount the loading animation
       // If the last transaction date is provided, fetch from that timestamp
       const filters = {
@@ -106,7 +122,7 @@ export default function SmsProvider({ children }) {
     startingTime = Date.now();
     console.log(`Importing transactions`);
     importSms(0);
-  }, [db, lastTransactionDate]);
+  }, [db, isLoading]);
 
   return (
     <SmsContext value={isImporting}>
