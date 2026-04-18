@@ -75,7 +75,12 @@ export default function SmsProvider({ children }) {
               message: pl.body,
             };
 
-            if (details.merchant || details.amount || details.date) {
+            if (
+              details.merchant ||
+              details.amount ||
+              details.date ||
+              details.balance
+            ) {
               // A valid transaction
               transactions.push(details);
             }

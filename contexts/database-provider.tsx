@@ -41,12 +41,13 @@ export default function DatabaseProvider({
                 merchant              TEXT NOT NULL,
                 transaction_timestamp TEXT NOT NULL,
                 amount                REAL NOT NULL,
+                balance               REAL NOT NULL,
                 transaction_cost      REAL,
                 direction             TEXT,
-                isPaybill             REAL NOT NULL,
-                isSendMoney           REAL NOT NULL,
-                isBuyGoods            REAL NOT NULL,
-                isReversal            REAL NOT NULL
+                is_paybill             REAL NOT NULL,
+                is_send_money           REAL NOT NULL,
+                is_buy_goods            REAL NOT NULL,
+                is_reversal            REAL NOT NULL
             );
         `);
         console.log("Database connection successful");

@@ -10,6 +10,7 @@ export interface TransactionDetails {
   isWithdraw: 1 | 0;
   transactionCost: number;
   incoming: 1 | 0;
+  balance: number
 }
 
 // Date and time
@@ -26,6 +27,9 @@ const AMOUNT_REGEX_2 = /[AP]MWithdraw\s+Ksh([\d,]+\.\d{1,2})/;
 
 // Transaction cost
 const TX_COST_REGEX = /Transaction cost, Ksh([\d,]+\.\d{1,2})\./;
+
+// Balance
+const BALANCE_REGEX = /balance is\sKsh([\d,]+\.\d{1,2})/
 
 // Boolean checkers
 const IS_PAYBILL_REGEX = /Ksh[\d,]+\.\d{1,2} sent to .* for .* on \d{1,2}\/\d{1,2}\/\d{2,4}/;
@@ -70,6 +74,11 @@ const extractTransactionDetails = (message: string): TransactionDetails => {
   const isSendMoney = IS_SEND_MONEY_REGEX.test(message);
   const isReversal = IS_REVERSAL_REGEX.test(message);
   const isWithdraw = IS_WITHDRAW_REGEX.test(message);
+  let balance = 0.0
+  const balanceReg = message.match(BALANCE_REGEX)
+  if (balanceReg) {
+    balance = parseFloat(balanceReg[1].replace(/,/g, ''))
+  }
 
   return {
     merchant,
@@ -83,6 +92,7 @@ const extractTransactionDetails = (message: string): TransactionDetails => {
     isWithdraw: !isPayBill && !isBuyGoods && !isSendMoney && !isReversal && isWithdraw ? 1 : 0,
     transactionCost,
     incoming: IS_INCOMING_REGEX.test(message) ? 0 : 1,
+    balance
   };
 };
 

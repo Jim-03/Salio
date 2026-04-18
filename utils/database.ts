@@ -24,9 +24,9 @@ export async function addToDatabase(
     const preparedStatement = await tx.prepareAsync(`
         INSERT OR IGNORE INTO transactions
         (reference_number, merchant, transaction_timestamp, amount,
-         transaction_cost, direction, isPaybill, isSendMoney, isBuyGoods,
-         isReversal)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         transaction_cost, direction, is_paybill, is_send_money, is_buy_goods,
+         is_reversal, balance)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     try {
@@ -34,7 +34,7 @@ export async function addToDatabase(
         // Execute the prepared statement for each transaction in the batch
         await preparedStatement.executeAsync([
           t.message.split(/\s/)[0],
-          t.merchant,
+          t.merchant.toUpperCase(),
           t.timestamp,
           t.amount,
           t.transactionCost,
@@ -43,6 +43,7 @@ export async function addToDatabase(
           t.isSendMoney,
           t.isBuyGoods,
           t.isReversal,
+          t.balance,
         ]);
       }
       await preparedStatement.executeAsync("COMMIT"); // Commit the current transaction
