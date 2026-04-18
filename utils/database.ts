@@ -46,7 +46,6 @@ export async function addToDatabase(
           t.balance,
         ]);
       }
-      await preparedStatement.executeAsync("COMMIT"); // Commit the current transaction
     } catch (error) {
       console.error("Batch failed, rolled back:", error);
       throw error;
