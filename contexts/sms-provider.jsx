@@ -1,5 +1,5 @@
 import { addToDatabase, getLastTransactionDate } from "@/utils/database";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import SmsAndroid from "react-native-get-sms-android";
 import ImportSmsCard from "../components/import-sms-card";
 import extractTransactionDetails from "../utils/regex-parser";
@@ -16,11 +16,13 @@ const SmsContext = createContext(false);
  */
 export default function SmsProvider({ children }) {
   const [isImporting, setIsImporting] = useState(false);
-  const [validTransactions, setValidTransactions] = useState(0); // Count the number of valid transactions for UI
+  const [validTransactions, setValidTransactions] = useState(0);
   const [lastTransactionDate, setLastTransactionDate] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const db = useDB();
   const SMS_BATCH = 500;
+
+  const isRunningRef = useRef(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -37,28 +39,32 @@ export default function SmsProvider({ children }) {
   }, [isImporting]);
 
   useEffect(() => {
+    if (isLoading) return;
+
+    if (isRunningRef.current) return;
+    isRunningRef.current = true;
+
     let totalRecords = 0;
-    let startingTime = 0;
-    let completionTime = 0;
+    let startingTime = Date.now();
+
     /**
      * Retrieve all SMS messages from M-Pesa
+     * @param {number} startIndex The position to start fetching from
      */
     const importSms = (startIndex) => {
-      if (isLoading) return;
-      setIsImporting(true); // Mount the loading animation
-      // If the last transaction date is provided, fetch from that timestamp
       const filters = {
         box: "inbox",
         address: "MPESA",
         indexFrom: startIndex,
         maxCount: SMS_BATCH,
       };
-
+      // If the last transaction date is provided, fetch from that timestamp
       if (lastTransactionDate) {
         filters.minDate = lastTransactionDate;
       }
 
-      // Fetch the SMS messages
+      setIsImporting(true);
+
       SmsAndroid.list(
         JSON.stringify(filters),
         /**
@@ -66,6 +72,7 @@ export default function SmsProvider({ children }) {
          * @param fail Error
          */
         (fail) => {
+          isRunningRef.current = false;
           console.error(
             "An error has occurred while fetching SMS messages:",
             fail,
@@ -109,12 +116,13 @@ export default function SmsProvider({ children }) {
           if (count === SMS_BATCH) {
             importSms(startIndex + SMS_BATCH);
           } else {
-            completionTime = Date.now();
+            const completionTime = Date.now();
             console.log(`Transaction import completed`);
             console.log(
               `Added ${totalRecords} transactions in ${((completionTime - startingTime) / 1000).toFixed(1)} seconds`,
             );
             setIsImporting(false); // Stop the animation
+            isRunningRef.current = false;
           }
         },
       );
@@ -122,7 +130,7 @@ export default function SmsProvider({ children }) {
     startingTime = Date.now();
     console.log(`Importing transactions`);
     importSms(0);
-  }, [db, isLoading]);
+  }, [db, isLoading, lastTransactionDate]);
 
   return (
     <SmsContext value={isImporting}>

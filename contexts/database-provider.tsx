@@ -34,6 +34,11 @@ export default function DatabaseProvider({
         console.log("Connecting to database");
 
         await connection.execAsync(`
+            PRAGMA journal_mode = WAL;
+            PRAGMA busy_timeout = 5000; 
+        `);
+
+        await connection.execAsync(`
             CREATE TABLE IF NOT EXISTS transactions
             (
                 id                    INTEGER PRIMARY KEY AUTOINCREMENT,
