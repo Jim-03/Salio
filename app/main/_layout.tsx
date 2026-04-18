@@ -50,6 +50,7 @@ export default function MainLayout(): React.JSX.Element {
               />
             ),
             tabBarLabel: "Home",
+            headerTitle: () => <HomeTitle />,
           }}
         />
         <Tabs.Screen
