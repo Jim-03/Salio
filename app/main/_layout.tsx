@@ -1,3 +1,5 @@
+import HeaderRight from "@/components/header-right";
+import HomeTitle from "@/components/home/home-title";
 import {
   darkModeContainerColor,
   lightModeContainerColor,
@@ -30,6 +32,11 @@ export default function MainLayout(): React.JSX.Element {
     tabBarIcon: {
       fontSize: 24,
     },
+    header: {
+      backgroundColor: isLight
+        ? lightModeContainerColor
+        : darkModeContainerColor,
+    },
   });
   return (
     <SmsProvider>
@@ -37,6 +44,8 @@ export default function MainLayout(): React.JSX.Element {
         screenOptions={{
           tabBarStyle: styles.tabBar,
           tabBarActiveTintColor: isLight ? "seagreen" : "white",
+          headerStyle: styles.header,
+          headerRight: () => <HeaderRight />,
         }}
       >
         <Tabs.Screen
