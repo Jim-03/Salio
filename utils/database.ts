@@ -186,3 +186,58 @@ export async function getLast5Transactions(db: SQLiteDatabase) {
   LIMIT 5
   `);
 }
+
+/**
+ * Retrieve training data spanning from the last 3 months
+ * @param db SQLite instance
+ * @returns {Promise<{number[][], string[]}>} A promise that resolves to a matrix of records and an array of categories
+ */
+export async function getTrainingData(db: SQLiteDatabase) {
+  const now = new Date();
+  const threeMonthsAgo = new Date(now);
+  threeMonthsAgo.setMonth(now.getMonth() - 3);
+
+  const transactions = await db.getAllAsync<{
+    transaction_timestamp: number;
+    amount: number;
+    transaction_cost: number;
+    is_paybill: 1 | 0;
+    is_send_money: 1 | 0;
+    is_buy_goods: 1 | 0;
+    is_reversal: 1 | 0;
+    direction: "IN" | "OUT";
+    category: string;
+  }>(
+    `
+    SELECT * FROM transactions 
+    WHERE transaction_timestamp > ? AND category IS NOT NULL
+  `,
+    [Number(threeMonthsAgo)],
+  );
+
+  const Xtrain: number[][] = [];
+  const Ytrain: string[] = [];
+
+  for (const t of transactions) {
+    const date = new Date(Number(t.transaction_timestamp));
+
+    const features = [
+      date.getHours(),
+      date.getDay(),
+      date.getDate(),
+      date.getMonth(),
+      Number(t.amount) || 0,
+      Number(t.transaction_cost) || 0,
+      t.is_paybill ? 1 : 0,
+      t.is_send_money ? 1 : 0,
+      t.is_buy_goods ? 1 : 0,
+      t.is_reversal ? 1 : 0,
+      t.direction === "IN" ? 1 : 0,
+    ];
+
+    Xtrain.push(features);
+    Ytrain.push(t.category);
+  }
+
+  return { Xtrain, Ytrain };
+}

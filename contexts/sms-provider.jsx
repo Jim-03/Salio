@@ -1,4 +1,6 @@
+import { useModel } from "@/contexts/model-provider";
 import { addToDatabase, getLastTransactionDate } from "@/utils/database";
+import AsyncStorage from "expo-sqlite/kv-store";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import SmsAndroid from "react-native-get-sms-android";
 import ImportSmsCard from "../components/import-sms-card";
@@ -19,8 +21,11 @@ export default function SmsProvider({ children }) {
   const [validTransactions, setValidTransactions] = useState(0);
   const [lastTransactionDate, setLastTransactionDate] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasTrained, setHasTrained] = useState(false);
   const db = useDB();
   const SMS_BATCH = 500;
+
+  const data = useModel();
 
   const isRunningRef = useRef(false);
 
@@ -30,6 +35,11 @@ export default function SmsProvider({ children }) {
       try {
         const data = await getLastTransactionDate(db);
 
+        const mlData = await AsyncStorage.getItem("hasTrained");
+
+        if (mlData) {
+          setHasTrained(JSON.stringify(mlData));
+        }
         if (data) setLastTransactionDate(data);
       } finally {
         setIsLoading(false);
@@ -104,6 +114,23 @@ export default function SmsProvider({ children }) {
               details.date ||
               details.balance
             ) {
+              if (hasTrained) {
+                const date = new Date(details.timestamp);
+                const uncategorizedData = [
+                  date.getHours(),
+                  date.getDay(),
+                  date.getDate(),
+                  date.getMonth(),
+                  Number(details.amount) || 0,
+                  Number(details.transactionCost) || 0,
+                  details.isPayBill,
+                  details.isSendMoney,
+                  details.isBuyGoods,
+                  details.isReversal,
+                  details.incoming,
+                ];
+                details.category = data.predict(uncategorizedData);
+              }
               // A valid transaction
               transactions.push(details);
             }
