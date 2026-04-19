@@ -60,7 +60,7 @@ export default function SmsProvider({ children }) {
       };
       // If the last transaction date is provided, fetch from that timestamp
       if (lastTransactionDate) {
-        filters.minDate = lastTransactionDate;
+        filters.minDate = lastTransactionDate + 1;
       }
 
       setIsImporting(true);
