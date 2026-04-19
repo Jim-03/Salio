@@ -49,10 +49,11 @@ export default function DatabaseProvider({
                 balance               REAL NOT NULL,
                 transaction_cost      REAL,
                 direction             TEXT,
-                is_paybill             REAL NOT NULL,
-                is_send_money           REAL NOT NULL,
-                is_buy_goods            REAL NOT NULL,
-                is_reversal            REAL NOT NULL
+                is_paybill            REAL NOT NULL,
+                is_send_money         REAL NOT NULL,
+                is_buy_goods          REAL NOT NULL,
+                is_reversal           REAL NOT NULL,
+                category              TEXT NOT NULL 
             );
         `);
         console.log("Database connection successful");
