@@ -19,7 +19,13 @@ import {
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
 /**
@@ -43,9 +49,14 @@ export default function Home(): React.JSX.Element {
   const isLight = useLightTheme();
   const bgColor = isLight ? lightModeBackground : darkModeBackground;
   const cardBg = isLight ? lightModeContainerColor : darkModeContainerColor;
-  const tint = isLight ? "black" : "white";
   const themeColor = isLight ? "black" : "white";
-  const labelFontSize = 18;
+
+  // Semantic tokens derived from theme
+  const mutedText = isLight ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.45)";
+  const dividerColor = isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.07)";
+  const incomeAccent = "#16a34a";
+  const expenseAccent = "#e53e3e";
+  const brandGreen = "#2e8b57";
 
   useEffect(() => {
     const loadData = async () => {
@@ -75,25 +86,21 @@ export default function Home(): React.JSX.Element {
   }, [isImporting]);
 
   const barData = useMemo(() => {
-    // If data isn't loaded yet, return an empty array for the chart
     if (!dailyData) return [];
-
-    // Map the object keys into the array format Gifted Charts expects
     return Object.keys(dailyData).map((key) => ({
-      label: key, // e.g., "0" (Sunday)
+      label: key,
       value: dailyData[key],
       topLabelComponent: () => (
         <Text
           numberOfLines={1}
           style={{
-            fontSize: 10,
-            color: tint,
-            opacity: 0.7,
-            marginBottom: 4,
+            fontSize: 9,
+            color: mutedText,
+            marginBottom: 3,
             textAlign: "center",
           }}
         >
-          {(dailyData[key] / 1000).toFixed(1)} K
+          {(dailyData[key] / 1000).toFixed(1)}K
         </Text>
       ),
     }));
@@ -104,109 +111,124 @@ export default function Home(): React.JSX.Element {
   }
 
   return (
-    <ScrollView style={[styles.background, { backgroundColor: bgColor }]}>
-      {/* Card to show the current balance */}
-      <View style={[styles.balanceCard, { backgroundColor: cardBg }]}>
-        <Text
-          style={[
-            styles.balanceLabel,
-            { color: tint, fontSize: labelFontSize },
-          ]}
-        >
-          Current M-Pesa balance
-        </Text>
-        <Text style={[styles.balanceText, { color: themeColor }]}>
-          KES {balance.toLocaleString("en-KE", { maximumFractionDigits: 0 })}
-        </Text>
-      </View>
+    <ScrollView
+      style={[styles.background, { backgroundColor: bgColor }]}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Balance hero card */}
+      <View style={[styles.heroCard, { backgroundColor: cardBg }]}>
+        {/* Top row: label + net indicator */}
+        <View style={styles.heroTopRow}>
+          <Text style={[styles.heroLabel, { color: mutedText }]}>
+            M-Pesa Balance
+          </Text>
+        </View>
 
-      {/* Card to show this month's expenditure*/}
-      <View style={styles.monthCard}>
-        <Text style={[styles.containerLabel, { fontSize: labelFontSize }]}>
-          Current month's overview
+        {/* Main balance */}
+        <Text style={[styles.heroAmount, { color: themeColor }]}>
+          <Text style={[styles.heroCurrency, { color: mutedText }]}>KES </Text>
+          {balance.toLocaleString("en-KE", { maximumFractionDigits: 0 })}
         </Text>
 
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            gap: 10,
-            width: "100%",
-            marginHorizontal: "auto",
-          }}
-        >
-          {/* Monthly income*/}
-          <View style={[styles.overviewCard, { backgroundColor: cardBg }]}>
-            <MaterialIcons
-              name={"arrow-downward"}
-              color={"green"}
-              style={styles.overviewCardIcon}
-            />
-            <View style={styles.overviewCardTextContainer}>
-              <Text style={[styles.overviewCardLabel, { color: tint }]}>
+        {/* Divider */}
+        <View style={[styles.heroDivider, { backgroundColor: dividerColor }]} />
+
+        {/* Income / Expense row */}
+        <View style={styles.heroStatsRow}>
+          <View style={styles.heroStat}>
+            <View style={styles.heroStatIcon}>
+              <MaterialIcons
+                name="arrow-downward"
+                size={14}
+                color={incomeAccent}
+              />
+            </View>
+            <View>
+              <Text style={[styles.heroStatLabel, { color: mutedText }]}>
                 Income
               </Text>
-              <Text style={[styles.overviewAmount, { color: themeColor }]}>
+              <Text style={[styles.heroStatAmount, { color: themeColor }]}>
                 KES{" "}
-                {income.toLocaleString("en-KE", { maximumFractionDigits: 0 })}
+                {(income || 0).toLocaleString("en-KE", {
+                  maximumFractionDigits: 0,
+                })}
               </Text>
             </View>
           </View>
 
-          {/* Monthly Expense */}
-          <View style={[styles.overviewCard, { backgroundColor: cardBg }]}>
-            <MaterialIcons
-              name={"arrow-upward"}
-              color={"red"}
-              style={styles.overviewCardIcon}
-            />
-            <View style={styles.overviewCardTextContainer}>
-              <Text style={[styles.overviewCardLabel, { color: tint }]}>
+          <View
+            style={[styles.heroStatDivider, { backgroundColor: dividerColor }]}
+          />
+
+          <View style={styles.heroStat}>
+            <View
+              style={[
+                styles.heroStatIcon,
+                { backgroundColor: "rgba(229,62,62,0.1)" },
+              ]}
+            >
+              <MaterialIcons
+                name="arrow-upward"
+                size={14}
+                color={expenseAccent}
+              />
+            </View>
+            <View>
+              <Text style={[styles.heroStatLabel, { color: mutedText }]}>
                 Expense
               </Text>
-              <Text style={[styles.overviewAmount, { color: themeColor }]}>
+              <Text style={[styles.heroStatAmount, { color: themeColor }]}>
                 KES{" "}
-                {expense.toLocaleString("en-KE", { maximumFractionDigits: 0 })}
+                {(expense || 0).toLocaleString("en-KE", {
+                  maximumFractionDigits: 0,
+                })}
               </Text>
             </View>
           </View>
         </View>
       </View>
 
-      {/* Container displaying the last 6-day usage */}
-      <View>
-        <Text style={[styles.containerLabel, { fontSize: labelFontSize }]}>
+      {/* Past 6-day expenditure */}
+      <View style={[styles.section, { backgroundColor: cardBg }]}>
+        <Text style={[styles.sectionLabel, { color: brandGreen }]}>
           Past 6 day expenditure
         </Text>
-        <View style={{ marginLeft: -15 }}>
+        <View style={{ marginLeft: -18, marginTop: 4 }}>
           <BarChart
             data={barData}
-            barWidth={25}
-            barBorderRadius={5}
+            barWidth={22}
+            barBorderTopLeftRadius={6}
+            barBorderTopRightRadius={6}
             hideAxesAndRules
-            frontColor={"tomato"}
+            frontColor={brandGreen}
             isAnimated
             disablePress
             disableScroll
-            yAxisExtraHeight={25}
-            xAxisLabelTextStyle={{ fontSize: 10, color: tint }}
+            yAxisExtraHeight={28}
+            xAxisLabelTextStyle={{ fontSize: 10, color: mutedText }}
           />
         </View>
       </View>
 
-      {/* Container displaying the last 5 transactions*/}
-      <View style={{ marginBottom: 75 }}>
-        <View style={styles.historyContainerHeader}>
-          <Text style={[styles.containerLabel, { fontSize: labelFontSize }]}>
+      {/* Recent transactions */}
+      <View
+        style={[styles.section, { backgroundColor: cardBg, marginBottom: 90 }]}
+      >
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionLabel, { color: brandGreen }]}>
             Recent Transactions
           </Text>
-          <Text
+          <TouchableOpacity
             onPress={() => router.push("/main/history")}
-            style={[styles.seeMoreText, { color: tint }]}
+            style={styles.seeMoreBtn}
           >
-            See more
-          </Text>
+            <Text style={[styles.seeMoreText, { color: brandGreen }]}>
+              See all
+            </Text>
+            <MaterialIcons name="chevron-right" size={16} color={brandGreen} />
+          </TouchableOpacity>
         </View>
+
         <View>
           {last5Transactions.map((t, k) => (
             <TransactionRow key={k} transaction={t} />
@@ -220,68 +242,118 @@ export default function Home(): React.JSX.Element {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
   },
-  balanceCard: {
+
+  //  Hero balance card
+  heroCard: {
     marginTop: 20,
-    height: 100,
-    borderRadius: 10,
-    elevation: 5,
+    borderRadius: 5,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 16,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+  },
+  heroTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  heroLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+  netBadgeText: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  heroAmount: {
+    fontSize: 36,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  heroCurrency: {
+    fontSize: 20,
+    fontWeight: "500",
+  },
+  heroDivider: {
+    height: 1,
+    marginBottom: 14,
+  },
+  heroStatsRow: {
+    flexDirection: "row",
     alignItems: "center",
   },
-  balanceLabel: {
-    opacity: 0.5,
-    marginTop: 10,
-    marginBottom: 15,
-    fontWeight: 500,
-  },
-  balanceText: {
-    fontWeight: "bold",
-    fontSize: 20,
-  },
-  monthCard: {},
-  containerLabel: {
-    color: "seagreen",
-    opacity: 0.7,
-    marginVertical: 10,
-  },
-  overviewCard: {
+  heroStat: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    paddingLeft: 5,
-    height: 55,
-    borderRadius: 10,
-    gap: 5,
-    elevation: 5,
+    gap: 10,
   },
-  overviewCardTextContainer: {
-    justifyContent: "center",
+  heroStatIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: "rgba(22,163,74,0.1)",
     alignItems: "center",
+    justifyContent: "center",
   },
-  overviewCardIcon: {
-    fontSize: 24,
-    padding: 5,
-    borderRadius: 5,
-  },
-  overviewCardLabel: {
-    opacity: 0.7,
+  heroStatLabel: {
     fontSize: 11,
+    fontWeight: "500",
+    marginBottom: 1,
   },
-  overviewAmount: {
-    fontSize: 18,
-    fontWeight: 500,
+  heroStatAmount: {
+    fontSize: 13,
+    fontWeight: "700",
   },
-  historyContainerHeader: {
+  heroStatDivider: {
+    width: 1,
+    height: 32,
+    marginHorizontal: 12,
+  },
+
+  //  Generic section card
+  section: {
+    borderRadius: 5,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 10,
+    marginTop: 14,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+  },
+  sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginVertical: 10,
     alignItems: "center",
+    marginBottom: 6,
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+  seeMoreBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 1,
   },
   seeMoreText: {
-    textDecorationStyle: "solid",
-    textDecorationLine: "underline",
-    fontSize: 15,
-    padding: 5,
+    fontSize: 12,
+    fontWeight: "600",
   },
 });
