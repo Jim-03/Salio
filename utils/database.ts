@@ -25,8 +25,8 @@ export async function addToDatabase(
         INSERT OR IGNORE INTO transactions
         (reference_number, merchant, transaction_timestamp, amount,
          transaction_cost, direction, is_paybill, is_send_money, is_buy_goods,
-         is_reversal, balance)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         is_reversal, balance, category)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     try {
@@ -44,6 +44,7 @@ export async function addToDatabase(
           t.isBuyGoods,
           t.isReversal,
           t.balance,
+          t.category,
         ]);
       }
     } catch (error) {
