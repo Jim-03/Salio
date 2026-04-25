@@ -21,7 +21,7 @@ const MerchantIcon = ({ names }: { names: string[] }): React.JSX.Element => {
 
 /**
  * Render the summary of a transaction
- * @param {TransactionSummary} transaction An object containing a transaction's summary
+ * @param {TransactionRecord} transaction An object containing a transaction's summary
  * @param {() => void} onPress function triggered when the row is clicked
  * @returns {React.JSX.Element} A component rendering the transaction summary
  */
@@ -29,7 +29,7 @@ export default function TransactionRow({
   transaction,
   onPress,
 }: {
-  transaction: TransactionSummary;
+  transaction: TransactionRecord;
   onPress?: () => void;
 }): React.JSX.Element {
   const date = new Date(Number(transaction.transaction_timestamp));
