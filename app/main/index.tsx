@@ -1,6 +1,4 @@
-import TransactionRow, {
-  type TransactionSummary,
-} from "@/components/transaction-row";
+import TransactionRow from "@/components/transaction-row";
 import {
   darkModeBackground,
   darkModeContainerColor,
@@ -15,6 +13,7 @@ import {
   getLast6DayExpense,
   getLatestBalance,
   getMonthlyOverview,
+  TransactionRecord,
 } from "@/utils/database";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { router } from "expo-router";
@@ -40,7 +39,7 @@ export default function Home(): React.JSX.Element {
   const [expense, setExpense] = useState(0);
   const [dailyData, setDailyData] = useState<Record<string, number>>({});
   const [last5Transactions, setLast5Transactions] = useState<
-    TransactionSummary[]
+    TransactionRecord[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const isImporting = useSms();

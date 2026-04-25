@@ -1,14 +1,7 @@
 import { useLightTheme } from "@/contexts/theme-provider";
+import { TransactionRecord } from "@/utils/database";
 import React from "react";
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
-
-export interface TransactionSummary {
-  merchant: string;
-  transaction_timestamp: number;
-  amount: number;
-  transaction_cost: number;
-  direction: "IN" | "OUT";
-}
 
 /**
  * Display a circular component with the merchant's initial

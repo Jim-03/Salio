@@ -7,7 +7,21 @@ export interface NewTransaction extends TransactionDetails {
   message: string;
 }
 
-const BATCH_SIZE = 500;
+export interface TransactionRecord {
+  id: number;
+  reference_number: string;
+  merchant: string;
+  transaction_timestamp: string;
+  amount: number;
+  balance: number;
+  transaction_cost: number;
+  direction: "IN" | "OUT";
+  is_paybill: 1 | 0;
+  is_send_money: 1 | 0;
+  is_buy_goods: 1 | 0;
+  is_reversal: 1 | 0;
+  category: string;
+}
 
 /**
  * Add new transactions to the database
@@ -175,13 +189,7 @@ export async function getLast6DayExpense(db: SQLiteDatabase) {
   }[]>} A promise that resolves to a summary of the last 5 saved transactions
  */
 export async function getLast5Transactions(db: SQLiteDatabase) {
-  return await db.getAllAsync<{
-    merchant: string;
-    transaction_timestamp: number;
-    amount: number;
-    transaction_cost: number;
-    direction: "IN" | "OUT";
-  }>(`
+  return await db.getAllAsync<TransactionRecord>(`
   SELECT merchant, transaction_timestamp, amount, transaction_cost, direction FROM transactions
   ORDER BY transaction_timestamp DESC
   LIMIT 5
@@ -198,17 +206,7 @@ export async function getTrainingData(db: SQLiteDatabase) {
   const threeMonthsAgo = new Date(now);
   threeMonthsAgo.setMonth(now.getMonth() - 3);
 
-  const transactions = await db.getAllAsync<{
-    transaction_timestamp: number;
-    amount: number;
-    transaction_cost: number;
-    is_paybill: 1 | 0;
-    is_send_money: 1 | 0;
-    is_buy_goods: 1 | 0;
-    is_reversal: 1 | 0;
-    direction: "IN" | "OUT";
-    category: string;
-  }>(
+  const transactions = await db.getAllAsync<TransactionRecord>(
     `
     SELECT * FROM transactions 
     WHERE transaction_timestamp > ? AND category IS NOT NULL
