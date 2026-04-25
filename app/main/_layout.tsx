@@ -1,5 +1,5 @@
 import HeaderRight from "@/components/header-right";
-import HomeTitle from "@/components/home/home-title";
+import HeaderTitle from "@/components/header-title";
 import {
   darkModeContainerColor,
   lightModeContainerColor,
@@ -61,7 +61,7 @@ export default function MainLayout(): React.JSX.Element {
                 />
               ),
               tabBarLabel: "Home",
-              headerTitle: () => <HomeTitle />,
+              headerTitle: () => <HeaderTitle text={'home'}/>,
             }}
           />
           <Tabs.Screen
