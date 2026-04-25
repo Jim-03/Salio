@@ -3,11 +3,17 @@ import { useLightTheme } from "@/contexts/theme-provider";
 import type React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+interface HeaderTitleProps {
+  text: string;
+}
+
 /**
- * Title at the home screen
+ * Header title
  * @returns {React.JSX.Element} Title component
  */
-export default function HomeTitle() {
+export default function HeaderTitle({
+  text,
+}: HeaderTitleProps): React.JSX.Element {
   const isLight = useLightTheme();
   /**
    * Get greeting depending on time
@@ -23,11 +29,13 @@ export default function HomeTitle() {
     return "Good Evening";
   };
 
+  if (text === "home") text = greeting();
+
   const titleColor = isLight ? primaryColor : "white";
 
   return (
     <View style={[styles.background]}>
-      <Text style={[styles.title, { color: titleColor }]}>{greeting()}</Text>
+      <Text style={[styles.title, { color: titleColor }]}>{text}</Text>
     </View>
   );
 }
@@ -35,7 +43,6 @@ export default function HomeTitle() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    padding: 10,
     justifyContent: "center",
     alignItems: "center",
   },
