@@ -61,7 +61,7 @@ export default function MainLayout(): React.JSX.Element {
                 />
               ),
               tabBarLabel: "Home",
-              headerTitle: () => <HeaderTitle text={'home'}/>,
+              headerTitle: () => <HeaderTitle text={"home"} />,
             }}
           />
           <Tabs.Screen
@@ -88,6 +88,7 @@ export default function MainLayout(): React.JSX.Element {
                 />
               ),
               tabBarLabel: "History",
+              headerTitle: () => <HeaderTitle text={"History"} />,
             }}
           />
           <Tabs.Screen

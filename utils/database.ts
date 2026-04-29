@@ -7,6 +7,13 @@ export interface NewTransaction extends TransactionDetails {
   message: string;
 }
 
+export interface TransactionFilters {
+  merchant: string | "ALL";
+  category: string | "ALL";
+  direction: "IN" | "OUT" | "ALL";
+  sort:"HIGHEST AMOUNT" | "LEAST AMOUNT" | "LATEST" | "OLDEST";
+}
+
 export interface TransactionRecord {
   id: number;
   reference_number: string;
@@ -201,7 +208,7 @@ export async function getLast5Transactions(db: SQLiteDatabase) {
  * @param db SQLite instance
  * @returns {Promise<{number[][], string[]}>} A promise that resolves to a matrix of records and an array of categories
  */
-export async function getTrainingData(db: SQLiteDatabase) {
+export async function getTrainingData(db: SQLiteDatabase): Promise<{}> {
   const now = new Date();
   const threeMonthsAgo = new Date(now);
   threeMonthsAgo.setMonth(now.getMonth() - 3);
@@ -239,4 +246,36 @@ export async function getTrainingData(db: SQLiteDatabase) {
   }
 
   return { Xtrain, Ytrain };
+}
+
+/**
+ * Retrieve all transactions satisfying filters
+ * @param {SQLiteDatabase} db SQLite instance
+ * @param {TransactionFilters} filters Filters object for searching purposes
+ * @param {number} offset Number of records to skip
+ * @returns {Promise<TransactionRecord[]>} A promise that resolves to an array of transaction records
+ */
+export async function getAllTransactions(
+  db: SQLiteDatabase,
+  filters: TransactionFilters,
+  offset: number,
+): Promise<TransactionRecord[]> {
+  const category = filters.category === "ALL" ? "%" : `%${filters.category}%`;
+  const direction = filters.direction === "ALL" ? "%" : filters.direction;
+  const merchant = filters.merchant === "ALL" ? "%" : `%${filters.merchant}%`;
+  const orderBy = filters.sort ? filters.sort.endsWith('AMOUNT') ? 'amount' : 'transaction_timestamp' : 'transaction_timestamp'
+  const order = filters.sort === 'LATEST' || filters.sort === 'HIGHEST AMOUNT' ? 'DESC' : 'ASC'
+
+  return await db.getAllAsync<TransactionRecord>(
+    `
+      SELECT * FROM transactions
+      WHERE category LIKE ?
+        AND direction LIKE ?
+        AND merchant LIKE ?
+      ORDER BY ${orderBy} ${order}
+      LIMIT 20
+          OFFSET ?
+  `,
+    [category, direction, merchant, offset],
+  );
 }
