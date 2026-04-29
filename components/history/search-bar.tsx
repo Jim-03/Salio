@@ -1,3 +1,4 @@
+import FiltersScreen from "@/components/history/filters-screen";
 import {
   darkModeContainerColor,
   lightModeContainerColor,
@@ -30,8 +31,12 @@ interface SearchBarProps {
  * @param {TransactionFilters} filters Filters applied when fetching transactions
  * @returns {React.JSX.Element} A search bar component in the history screen
  */
-export default function SearchBar({ setFilters, filters }: SearchBarProps): React.JSX.Element {
+export default function SearchBar({
+  setFilters,
+  filters,
+}: SearchBarProps): React.JSX.Element {
   const [search, setSearch] = useState("");
+  const [showFilterScreen, setShowFilterScreen] = useState(false);
 
   const isLight = useLightTheme();
   const bgColor = isLight ? lightModeContainerColor : darkModeContainerColor;
@@ -56,6 +61,14 @@ export default function SearchBar({ setFilters, filters }: SearchBarProps): Reac
 
   return (
     <View style={[styles.container, { backgroundColor: bgColor }]}>
+      {showFilterScreen && (
+        <FiltersScreen
+          filters={filters}
+          setFilters={setFilters}
+          isVisible={showFilterScreen}
+          close={() => setShowFilterScreen(false)}
+        />
+      )}
       <View style={[styles.searchBar, { borderColor }]}>
         {search && (
           <TouchableWithoutFeedback onPress={close}>
@@ -77,7 +90,7 @@ export default function SearchBar({ setFilters, filters }: SearchBarProps): Reac
           </View>
         </TouchableWithoutFeedback>
       </View>
-      <TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={() => setShowFilterScreen(true)}>
         <View style={styles.button}>
           <MaterialIcons name={"filter-alt"} style={styles.icon} />
         </View>
