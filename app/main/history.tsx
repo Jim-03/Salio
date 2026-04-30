@@ -1,20 +1,25 @@
 import SearchBar from "@/components/history/search-bar";
+import TransactionDetailModal from "@/components/history/transaction-detail";
 import TransactionRow from "@/components/transaction-row";
 import { darkModeBackground, lightModeBackground } from "@/constants/colors";
 import { useDB } from "@/contexts/database-provider";
+import { useModel } from "@/contexts/model-provider";
 import { useSms } from "@/contexts/sms-provider";
 import { useLightTheme } from "@/contexts/theme-provider";
 import {
   getAllTransactions,
   TransactionFilters,
   TransactionRecord,
+  updateTransaction,
 } from "@/utils/database";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
 
-const FlatListRow = memo(({ item }: { item: TransactionRecord }) => (
-  <TransactionRow transaction={item} />
-));
+const FlatListRow = memo(
+  ({ item, onPress }: { item: TransactionRecord; onPress: () => void }) => (
+    <TransactionRow transaction={item} onPress={onPress} />
+  ),
+);
 
 /**
  * History screen
@@ -33,15 +38,28 @@ export default function History(): React.JSX.Element {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [offset, setOffset] = useState(0);
   const [isLoadingMoreData, setIsLoadingMoreData] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<TransactionRecord | null>(null);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
 
   const renderItem = useCallback(
-    ({ item }: { item: TransactionRecord }) => <FlatListRow item={item} />,
+    ({ item }: { item: TransactionRecord }) => (
+      <FlatListRow
+        item={item}
+        onPress={() => {
+          setSelectedTransaction(item);
+          setShowTransactionModal(true);
+        }}
+      />
+    ),
     [],
   );
 
   const isImporting = useSms();
   const db = useDB();
   const isLight = useLightTheme();
+
+  const { train } = useModel();
 
   const backgroundColor = isLight ? lightModeBackground : darkModeBackground;
 
@@ -76,8 +94,32 @@ export default function History(): React.JSX.Element {
     setTransactions([]);
   }, [filters]);
 
+  const changeCategory = async (
+    transactionId: number,
+    newCategory: string,
+    applyToMerchant: boolean,
+    merchant: string,
+  ) => {
+    await updateTransaction(
+      db,
+      transactionId,
+      applyToMerchant,
+      merchant,
+      newCategory,
+    );
+    await train();
+  };
+
   return (
     <View style={[styles.background, { backgroundColor }]}>
+      {showTransactionModal && (
+        <TransactionDetailModal
+          transaction={selectedTransaction}
+          isVisible={showTransactionModal}
+          close={() => setShowTransactionModal(false)}
+          onCategoryChange={changeCategory}
+        />
+      )}
       {/* Search Bar*/}
       <SearchBar setFilters={setFilters} filters={filters} />
 
