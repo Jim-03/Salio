@@ -18,6 +18,7 @@ SplashScreen.preventAutoHideAsync();
  */
 export default function ModelProvider({ children }) {
   const [model, setModel] = useState(new GaussianNB());
+  const [categories, setCategories] = useState([]);
   const db = useDB();
 
   useEffect(() => {
@@ -27,12 +28,17 @@ export default function ModelProvider({ children }) {
      */
     const loadModel = async () => {
       try {
-        const data = await AsyncStorage.getItem("model");
+        const modelData = await AsyncStorage.getItem("model");
+        const categoriesData = await AsyncStorage.getItem("model_categories");
 
-        if (data) {
-          setModel(GaussianNB.load(JSON.parse(data)));
-          console.log("Model initialized");
+        if (modelData) {
+          setModel(GaussianNB.load(JSON.parse(modelData)));
         }
+        if (categoriesData) {
+          setCategories(JSON.parse(categoriesData));
+        }
+
+        console.log("Model initialized");
       } catch (e) {
         console.error(
           "An error has occurred while fetching the model data: ",
@@ -49,13 +55,22 @@ export default function ModelProvider({ children }) {
    * Renews the ML model memory
    */
   const train = async () => {
-    const { Xtrain, Ytrain } = await getTrainingData(db);
+    const {
+      Xtrain,
+      Ytrain,
+      categories: newCategories,
+    } = await getTrainingData(db);
 
-    // Train the model from the data
+    console.log("Training model");
     model.train(Xtrain, Ytrain);
 
-    // Store the new model weights
-    await AsyncStorage.setItem("model", JSON.stringify(model.toJSON()));
+    await AsyncStorage.multiSet([
+      ["model", JSON.stringify(model.toJSON())],
+      ["model_categories", JSON.stringify(newCategories)],
+    ]);
+
+    setCategories(newCategories);
+
     console.log(`Model trained on ${Xtrain.length} records`);
   };
 
@@ -65,7 +80,8 @@ export default function ModelProvider({ children }) {
    * @returns {string} The category the transaction belongs to
    */
   const predict = (transaction) => {
-    return model.predict([transaction])[0];
+    const classId = model.predict([transaction])[0];
+    return categories[classId] || "Unknown";
   };
 
   return (
@@ -76,8 +92,12 @@ export default function ModelProvider({ children }) {
 }
 
 /**
- * Hook to use the models methods
- * @returns {{train: () => void, predict: () => string}} Model's methods
+ * Hook to use the app's ML model
+ * @returns {{
+ *   train:  () => Promise<void>,
+ *   predict: (TransactionRecord) => string
+ * }} An object containing the method to train the model and predict a transaction's category
+ * @throws {Error} In case the hook is called outside the model provider
  */
 export const useModel = () => {
   const data = useContext(ModelContext);
