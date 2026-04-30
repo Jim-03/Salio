@@ -11,7 +11,7 @@ export interface TransactionFilters {
   merchant: string | "ALL";
   category: string | "ALL";
   direction: "IN" | "OUT" | "ALL";
-  sort:"HIGHEST AMOUNT" | "LEAST AMOUNT" | "LATEST" | "OLDEST";
+  sort: "HIGHEST AMOUNT" | "LEAST AMOUNT" | "LATEST" | "OLDEST";
 }
 
 export interface TransactionRecord {
@@ -205,24 +205,32 @@ export async function getLast5Transactions(db: SQLiteDatabase) {
 
 /**
  * Retrieve training data spanning from the last 3 months
- * @param db SQLite instance
- * @returns {Promise<{number[][], string[]}>} A promise that resolves to a matrix of records and an array of categories
+ * @param {SQLiteDatabase} db SQLite instance
+ * @returns {Promise<{Xtrain: number[][], Ytrain: number[], categories: string[]}>}
  */
-export async function getTrainingData(db: SQLiteDatabase): Promise<{}> {
+export async function getTrainingData(db: SQLiteDatabase): Promise<{
+  Xtrain: number[][];
+  Ytrain: number[];
+  categories: string[];
+}> {
   const now = new Date();
   const threeMonthsAgo = new Date(now);
   threeMonthsAgo.setMonth(now.getMonth() - 3);
 
   const transactions = await db.getAllAsync<TransactionRecord>(
     `
-    SELECT * FROM transactions 
-    WHERE transaction_timestamp > ? AND category IS NOT NULL
-  `,
+          SELECT * FROM transactions
+          WHERE transaction_timestamp > ? AND category IS NOT NULL AND category IS NOT 'UNKNOWN'
+      `,
     [Number(threeMonthsAgo)],
   );
 
   const Xtrain: number[][] = [];
-  const Ytrain: string[] = [];
+  const Ytrain: number[] = [];
+
+  const categoryMap: Record<string, number> = {};
+  const categories: string[] = [];
+  let classId = 0;
 
   for (const t of transactions) {
     const date = new Date(Number(t.transaction_timestamp));
@@ -241,11 +249,17 @@ export async function getTrainingData(db: SQLiteDatabase): Promise<{}> {
       t.direction === "IN" ? 1 : 0,
     ];
 
+    if (categoryMap[t.category] === undefined) {
+      categoryMap[t.category] = classId;
+      categories.push(t.category);
+      classId++;
+    }
+
     Xtrain.push(features);
-    Ytrain.push(t.category);
+    Ytrain.push(categoryMap[t.category]);
   }
 
-  return { Xtrain, Ytrain };
+  return { Xtrain, Ytrain, categories };
 }
 
 /**
