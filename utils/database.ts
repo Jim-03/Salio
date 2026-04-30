@@ -277,8 +277,15 @@ export async function getAllTransactions(
   const category = filters.category === "ALL" ? "%" : `%${filters.category}%`;
   const direction = filters.direction === "ALL" ? "%" : filters.direction;
   const merchant = filters.merchant === "ALL" ? "%" : `%${filters.merchant}%`;
-  const orderBy = filters.sort ? filters.sort.endsWith('AMOUNT') ? 'amount' : 'transaction_timestamp' : 'transaction_timestamp'
-  const order = filters.sort === 'LATEST' || filters.sort === 'HIGHEST AMOUNT' ? 'DESC' : 'ASC'
+  const orderBy = filters.sort
+    ? filters.sort.endsWith("AMOUNT")
+      ? "amount"
+      : "transaction_timestamp"
+    : "transaction_timestamp";
+  const order =
+    filters.sort === "LATEST" || filters.sort === "HIGHEST AMOUNT"
+      ? "DESC"
+      : "ASC";
 
   return await db.getAllAsync<TransactionRecord>(
     `
@@ -292,4 +299,40 @@ export async function getAllTransactions(
   `,
     [category, direction, merchant, offset],
   );
+}
+
+/**
+ * Update transaction details
+ * @param {SQLiteDatabase} db SQLite instance
+ * @param {number} id transaction primary key
+ * @param {boolean} applyAll determiner if all transactions under the same merchant should be updated
+ * @param {string} merchant Merchant name
+ * @param {string} category New category name
+ * @returns {Promise<void>} A promise that resolves when the transaction is updated
+ */
+export async function updateTransaction(
+  db: SQLiteDatabase,
+  id: number,
+  applyAll: boolean,
+  merchant: string,
+  category: string,
+): Promise<void> {
+  if (applyAll) {
+    await db.runAsync(
+      `
+        UPDATE transactions
+        SET category = ?
+        WHERE merchant = ?`,
+      [category, merchant],
+    );
+  } else {
+    await db.runAsync(
+      `
+        UPDATE transactions
+        SET category = ?
+        WHERE id = ?
+    `,
+      [category, id],
+    );
+  }
 }
