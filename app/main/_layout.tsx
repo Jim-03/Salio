@@ -75,6 +75,7 @@ export default function MainLayout(): React.JSX.Element {
                 />
               ),
               tabBarLabel: "Analytics",
+              headerShown: false,
             }}
           />
           <Tabs.Screen

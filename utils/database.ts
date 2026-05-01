@@ -30,6 +30,17 @@ export interface TransactionRecord {
   category: string;
 }
 
+export interface CategoryExpense {
+  category: string;
+  total_expense: string;
+}
+
+export interface MonthlyOverview {
+  month: string;
+  total_expense: number;
+  total_income: number;
+}
+
 /**
  * Add new transactions to the database
  * @param {SQLiteDatabase} db SQLite instance
@@ -335,4 +346,102 @@ export async function updateTransaction(
       [category, id],
     );
   }
+}
+
+/**
+ * Retrieve expense by category in a specified period
+ * @param {SQLiteDatabase} db SQLite instance
+ * @param {number} startDate Start date in milliseconds
+ * @param {number} endDate End date in milliseconds
+ * @returns {Promise<CategoryExpense[]>} A promise that resolves to an array of categories and their total expense
+ */
+export async function getCategoryExpense(
+  db: SQLiteDatabase,
+  startDate: number,
+  endDate: number,
+): Promise<CategoryExpense[]> {
+  return await db.getAllAsync<CategoryExpense>(
+    `
+  SELECT SUM(amount) + SUM(transaction_cost) AS total_expense, category FROM transactions
+  WHERE transaction_timestamp BETWEEN ? AND ?
+  GROUP BY category
+  `,
+    [startDate.toString(), endDate.toString()],
+  );
+}
+
+/**
+ * Retrieve the total income/expense in a specified period
+ * @param {SQLiteDatabase} db SQLite instance
+ * @param {number} startDate Start date in milliseconds
+ * @param {number} endDate End date in milliseconds
+ * @returns {Promise<{income: number, expense: number}>} A promise that resolves to the total income & expense
+ */
+export async function getCashFlowOverView(
+  db: SQLiteDatabase,
+  startDate: number,
+  endDate: number,
+): Promise<{ income: number; expense: number }> {
+  const start = startDate.toString();
+  const end = endDate.toString();
+  const incomeData = await db.getFirstAsync<{ total_amount: number }>(
+    `
+  SELECT SUM(amount) AS total_amount FROM transactions
+  WHERE transaction_timestamp BETWEEN ? AND ? AND direction = 'IN'
+  `,
+    [start, end],
+  );
+  const expenseData = await db.getFirstAsync<{ total_amount: number }>(
+    `
+  SELECT SUM(amount) + SUM(transaction_cost) AS total_amount FROM transactions
+  WHERE transaction_timestamp BETWEEN ? AND ? AND direction = 'OUT'
+  `,
+    [start, end],
+  );
+
+  return {
+    income: incomeData?.total_amount || 0,
+    expense: expenseData?.total_amount || 0,
+  };
+}
+
+/**
+ * Retrieve the total income & expense pre month in a specified period
+ * @param {SQLiteDatabase} db SQLite instance
+ * @param {number} startDate Start date in milliseconds
+ * @param {number} endDate End date in milliseconds
+ * @returns {Promise<MonthlyOverview[]>} A promise that resolves to an array of monthly income and expense
+ */
+export async function getMonthlyReview(
+  db: SQLiteDatabase,
+  startDate: Date,
+  endDate: Date,
+): Promise<MonthlyOverview[]> {
+  // Only need boundaries for the entire period
+  const startOfPeriod = new Date(startDate.getTime());
+  startOfPeriod.setDate(1);
+  startOfPeriod.setHours(0, 0, 0, 0);
+
+  const endOfPeriod = new Date(endDate.getTime());
+  endOfPeriod.setHours(23, 59, 59, 999);
+
+  // One single query to fetch all months grouped together
+  return await db.getAllAsync<MonthlyOverview>(
+    `
+      SELECT
+          strftime('%Y-%m', CAST(transaction_timestamp AS INTEGER) / 1000, 'unixepoch') AS month,
+
+          -- Calculate OUT totals (Expenses)
+          SUM(CASE WHEN direction = 'OUT' THEN amount + transaction_cost ELSE 0 END) AS total_expense,
+
+          -- Calculate IN totals (Income)
+          SUM(CASE WHEN direction = 'IN' THEN amount ELSE 0 END) AS total_income
+
+      FROM transactions
+      WHERE transaction_timestamp BETWEEN ? AND ?
+      GROUP BY month
+      ORDER BY month ASC
+  `,
+    [startOfPeriod.getTime().toString(), endOfPeriod.getTime().toString()],
+  );
 }
