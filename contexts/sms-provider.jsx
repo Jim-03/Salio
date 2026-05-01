@@ -25,7 +25,7 @@ export default function SmsProvider({ children }) {
   const db = useDB();
   const SMS_BATCH = 500;
 
-  const data = useModel();
+  const { predict } = useModel();
 
   const isRunningRef = useRef(false);
 
@@ -103,7 +103,7 @@ export default function SmsProvider({ children }) {
             const details = {
               // Extract the features of the message
               ...extractTransactionDetails(pl.body),
-              category: "unknown",
+              category: "UNKNOWN",
               timestamp: pl.date,
               message: pl.body,
             };
@@ -129,7 +129,7 @@ export default function SmsProvider({ children }) {
                   details.isReversal,
                   details.incoming,
                 ];
-                details.category = data.predict(uncategorizedData);
+                details.category = predict(uncategorizedData);
               }
               // A valid transaction
               transactions.push(details);
