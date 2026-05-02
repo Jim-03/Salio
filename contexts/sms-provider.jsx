@@ -106,6 +106,7 @@ export default function SmsProvider({ children }) {
               category: "UNKNOWN",
               timestamp: pl.date,
               message: pl.body,
+              isAiCategorized: 0
             };
 
             if (
@@ -130,6 +131,7 @@ export default function SmsProvider({ children }) {
                   details.incoming,
                 ];
                 details.category = predict(uncategorizedData);
+                details.isAiCategorized = 1
               }
               // A valid transaction
               transactions.push(details);

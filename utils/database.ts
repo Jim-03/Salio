@@ -5,6 +5,7 @@ export interface NewTransaction extends TransactionDetails {
   timestamp: string;
   category: string;
   message: string;
+  isAiCategorized: 0 | 1
 }
 
 export interface TransactionFilters {
@@ -28,6 +29,7 @@ export interface TransactionRecord {
   is_buy_goods: 1 | 0;
   is_reversal: 1 | 0;
   category: string;
+  is_ai_categorized: 0 | 1
 }
 
 export interface CategoryExpense {
@@ -57,8 +59,8 @@ export async function addToDatabase(
         INSERT OR IGNORE INTO transactions
         (reference_number, merchant, transaction_timestamp, amount,
          transaction_cost, direction, is_paybill, is_send_money, is_buy_goods,
-         is_reversal, balance, category)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         is_reversal, balance, category, is_ai_categorized)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     try {
@@ -77,6 +79,7 @@ export async function addToDatabase(
           t.isReversal,
           t.balance,
           t.category,
+            t.isAiCategorized
         ]);
       }
     } catch (error) {

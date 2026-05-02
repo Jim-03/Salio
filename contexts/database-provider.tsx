@@ -53,6 +53,7 @@ export default function DatabaseProvider({
                 is_send_money         REAL NOT NULL,
                 is_buy_goods          REAL NOT NULL,
                 is_reversal           REAL NOT NULL,
+                is_ai_categorized     INTEGER NOT NULL,
                 category              TEXT NOT NULL 
             );
         `);
