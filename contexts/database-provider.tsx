@@ -49,10 +49,10 @@ export default function DatabaseProvider({
                 balance               REAL NOT NULL,
                 transaction_cost      REAL,
                 direction             TEXT,
-                is_paybill            REAL NOT NULL,
-                is_send_money         REAL NOT NULL,
-                is_buy_goods          REAL NOT NULL,
-                is_reversal           REAL NOT NULL,
+                is_paybill            INTEGER NOT NULL,
+                is_send_money         INTEGER NOT NULL,
+                is_buy_goods          INTEGER NOT NULL,
+                is_reversal           INTEGER NOT NULL,
                 is_ai_categorized     INTEGER NOT NULL,
                 category              TEXT NOT NULL 
             );
@@ -76,7 +76,7 @@ export default function DatabaseProvider({
  * Hook to access the SQLite database connection instance.
  *
  * @returns {SQLite.SQLiteDatabase} The active SQLite database connection.
- * @throws {Error} If used outside of a DatabaseProvider or if the database is not yet initialized.
+ * @throws {Error} If used outside DatabaseProvider or if the database is not yet initialized.
  */
 export const useDB = (): SQLite.SQLiteDatabase => {
   const db = useContext(DatabaseContext);
