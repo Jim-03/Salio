@@ -92,19 +92,6 @@ export default function MainLayout(): React.JSX.Element {
               headerTitle: () => <HeaderTitle text={"History"} />,
             }}
           />
-          <Tabs.Screen
-            name="insights"
-            options={{
-              tabBarIcon: ({ color }) => (
-                <MaterialIcons
-                  name="group-work"
-                  color={color}
-                  style={styles.tabBarIcon}
-                />
-              ),
-              tabBarLabel: "Insights",
-            }}
-          />
         </Tabs>
       </SmsProvider>
     </ModelProvider>
