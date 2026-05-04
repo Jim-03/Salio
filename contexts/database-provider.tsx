@@ -18,13 +18,13 @@ const DatabaseContext = createContext<SQLite.SQLiteDatabase | null>(null);
  *
  * @param {object} props - The component's props.
  * @param {React.ReactNode} props.children - The child components to be rendered within the provider.
- * @returns {JSX.Element} The provider component.
+ * @returns {JSX.Element | undefined} The provider component.
  */
 export default function DatabaseProvider({
   children,
 }: {
   children: React.ReactNode;
-}): JSX.Element {
+}): JSX.Element | undefined {
   const [db, setDb] = useState<SQLite.SQLiteDatabase | null>(null);
   useEffect(() => {
     const createDb = async () => {
@@ -66,6 +66,10 @@ export default function DatabaseProvider({
     };
     createDb();
   }, []);
+
+  if (!db) {
+    return;
+  }
 
   return (
     <DatabaseContext.Provider value={db}>{children}</DatabaseContext.Provider>
