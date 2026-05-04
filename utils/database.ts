@@ -366,7 +366,7 @@ export async function getCategoryExpense(
   return await db.getAllAsync<CategoryExpense>(
     `
   SELECT SUM(amount) + SUM(transaction_cost) AS total_expense, category FROM transactions
-  WHERE transaction_timestamp BETWEEN ? AND ?
+  WHERE transaction_timestamp BETWEEN ? AND ? AND direction = 'OUT'
   GROUP BY category
   `,
     [startDate.toString(), endDate.toString()],
