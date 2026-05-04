@@ -93,16 +93,16 @@ export default function MainLayout(): React.JSX.Element {
             }}
           />
           <Tabs.Screen
-            name="profiles"
+            name="insights"
             options={{
               tabBarIcon: ({ color }) => (
                 <MaterialIcons
-                  name="person"
+                  name="group-work"
                   color={color}
                   style={styles.tabBarIcon}
                 />
               ),
-              tabBarLabel: "Profiles",
+              tabBarLabel: "Insights",
             }}
           />
         </Tabs>
