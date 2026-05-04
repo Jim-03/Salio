@@ -1,4 +1,6 @@
 import DatabaseProvider from "@/contexts/database-provider";
+import ModelProvider from "@/contexts/model-provider";
+import SmsProvider from "@/contexts/sms-provider";
 import ThemeProvider from "@/contexts/theme-provider";
 import { Stack } from "expo-router";
 import { type JSX } from "react";
@@ -14,7 +16,11 @@ export default function AppLayout(): JSX.Element {
   return (
     <ThemeProvider>
       <DatabaseProvider>
-        <Stack screenOptions={{ headerShown: false }} />
+        <ModelProvider>
+          <SmsProvider>
+            <Stack screenOptions={{ headerShown: false }} />
+          </SmsProvider>
+        </ModelProvider>
       </DatabaseProvider>
     </ThemeProvider>
   );
