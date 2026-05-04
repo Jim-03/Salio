@@ -25,7 +25,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { BarChart } from "react-native-gifted-charts";
+import { LineChart } from "react-native-gifted-charts";
 
 /**
  * Home screen
@@ -84,30 +84,42 @@ export default function Home(): React.JSX.Element {
     loadData();
   }, [isImporting]);
 
-  const barData = useMemo(() => {
+  const lineData = useMemo(() => {
     if (!dailyData) return [];
-    return Object.keys(dailyData).map((key) => ({
-      label: key,
-      value: dailyData[key],
-      topLabelComponent: () => (
-        <Text
-          numberOfLines={1}
-          style={{
-            fontSize: 9,
-            color: mutedText,
-            marginBottom: 3,
-            textAlign: "center",
-          }}
-        >
-          {(dailyData[key] / 1000).toFixed(1)}K
-        </Text>
-      ),
-    }));
-  }, [dailyData]);
+    return Object.keys(dailyData).map((key) => {
+      const val = dailyData[key];
 
-  if (isImporting || isLoading) {
-    return <></>;
-  }
+      // Smart formatting to prevent rounding errors
+      let labelText = "";
+      if (val > 0 && val < 1000) {
+        labelText = val.toString(); // Shows exactly 30 instead of 0.0K
+      } else if (val >= 1000) {
+        labelText = `${(val / 1000).toFixed(1)}K`; // Shows 2.0K
+      }
+
+      return {
+        label: key,
+        value: val,
+        dataPointLabelComponent: () => {
+          if (!labelText) return null;
+
+          return (
+            <View style={{ width: 40, alignItems: "center", marginLeft: -5 }}>
+              <Text
+                style={{
+                  fontSize: 9,
+                  color: mutedText,
+                  fontWeight: "600",
+                }}
+              >
+                {labelText}
+              </Text>
+            </View>
+          );
+        },
+      };
+    });
+  }, [dailyData, mutedText]);
 
   return (
     <ScrollView
@@ -192,19 +204,24 @@ export default function Home(): React.JSX.Element {
         <Text style={[styles.sectionLabel, { color: brandGreen }]}>
           Past 6 day expenditure
         </Text>
-        <View style={{ marginLeft: -18, marginTop: 4 }}>
-          <BarChart
-            data={barData}
-            barWidth={22}
-            barBorderTopLeftRadius={6}
-            barBorderTopRightRadius={6}
+        <View style={{ marginLeft: -18, marginTop: 15 }}>
+          <LineChart
+            data={lineData}
+            color={brandGreen}
+            thickness={3}
+            dataPointsColor={brandGreen}
+            dataPointsRadius={4}
             hideAxesAndRules
-            frontColor={brandGreen}
             isAnimated
-            disablePress
-            disableScroll
-            yAxisExtraHeight={28}
+            yAxisExtraHeight={45}
+            dataPointLabelShiftY={-10}
             xAxisLabelTextStyle={{ fontSize: 10, color: mutedText }}
+            curved
+            areaChart
+            startFillColor={brandGreen}
+            startOpacity={0.2}
+            endFillColor={brandGreen}
+            endOpacity={0.01}
           />
         </View>
       </View>
