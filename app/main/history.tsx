@@ -55,7 +55,7 @@ export default function History(): React.JSX.Element {
     [],
   );
 
-  const isImporting = useSms();
+  const { isImporting }= useSms();
   const db = useDB();
   const isLight = useLightTheme();
 

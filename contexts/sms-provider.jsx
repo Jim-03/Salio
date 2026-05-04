@@ -7,7 +7,10 @@ import ImportSmsCard from "../components/import-sms-card";
 import extractTransactionDetails from "../utils/regex-parser";
 import { useDB } from "./database-provider";
 
-const SmsContext = createContext(false);
+const SmsContext = createContext({
+  isImporting: false,
+  forceSync: () => {},
+});
 
 /**
  * Provider component that reads through the device's SMS messages
@@ -22,6 +25,8 @@ export default function SmsProvider({ children }) {
   const [lastTransactionDate, setLastTransactionDate] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasTrained, setHasTrained] = useState(false);
+  const [syncTrigger, setSyncTrigger] = useState(0);
+
   const db = useDB();
   const SMS_BATCH = 500;
 
@@ -106,7 +111,7 @@ export default function SmsProvider({ children }) {
               category: "UNKNOWN",
               timestamp: pl.date,
               message: pl.body,
-              isAiCategorized: 0
+              isAiCategorized: 0,
             };
 
             if (
@@ -131,7 +136,7 @@ export default function SmsProvider({ children }) {
                   details.incoming,
                 ];
                 details.category = predict(uncategorizedData);
-                details.isAiCategorized = 1
+                details.isAiCategorized = 1;
               }
               // A valid transaction
               transactions.push(details);
@@ -159,10 +164,12 @@ export default function SmsProvider({ children }) {
     startingTime = Date.now();
     console.log(`Importing transactions`);
     importSms(0);
-  }, [db, isLoading, lastTransactionDate]);
+  }, [db, isLoading, lastTransactionDate, syncTrigger]);
 
   return (
-    <SmsContext value={isImporting}>
+    <SmsContext.Provider
+      value={{ isImporting, forceSync: () => setSyncTrigger((prev) => prev + 1) }}
+    >
       {isImporting && (
         <ImportSmsCard
           isLoading={isImporting}
@@ -170,13 +177,16 @@ export default function SmsProvider({ children }) {
         />
       )}
       {children}
-    </SmsContext>
+    </SmsContext.Provider>
   );
 }
 
 /**
  * Hook to check if SMS messages are being imported
- * @returns {boolean} true if SMS messages are still importing, false otherwise
+ * @returns {{
+ *   isImporting: boolean,
+ *   forceSync: () => void
+ * }} true if SMS messages are still importing, false otherwise
  * @throws {Error} In case the hook is used outside the SmsProvider
  */
 export const useSms = () => {

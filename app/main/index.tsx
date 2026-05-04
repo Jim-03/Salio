@@ -42,7 +42,7 @@ export default function Home(): React.JSX.Element {
     TransactionRecord[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
-  const isImporting = useSms();
+  const { isImporting } = useSms();
   const db = useDB();
 
   const isLight = useLightTheme();
