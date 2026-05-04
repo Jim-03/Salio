@@ -4,6 +4,7 @@ import {
   darkModeContainerColor,
   lightModeContainerColor,
 } from "@/constants/colors";
+import SmsProvider from "@/contexts/sms-provider";
 import { useLightTheme } from "@/contexts/theme-provider";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Tabs } from "expo-router";
@@ -38,56 +39,58 @@ export default function MainLayout(): React.JSX.Element {
     },
   });
   return (
-    <Tabs
-      screenOptions={{
-        tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: isLight ? "seagreen" : "white",
-        headerStyle: styles.header,
-        headerRight: () => <HeaderRight />,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons
-              name="home"
-              color={color}
-              style={styles.tabBarIcon}
-            />
-          ),
-          tabBarLabel: "Home",
-          headerTitle: () => <HeaderTitle text={"home"} />,
+    <SmsProvider>
+      <Tabs
+        screenOptions={{
+          tabBarStyle: styles.tabBar,
+          tabBarActiveTintColor: isLight ? "seagreen" : "white",
+          headerStyle: styles.header,
+          headerRight: () => <HeaderRight />,
         }}
-      />
-      <Tabs.Screen
-        name="analytics"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons
-              name="bar-chart"
-              color={color}
-              style={styles.tabBarIcon}
-            />
-          ),
-          tabBarLabel: "Analytics",
-          headerShown: false,
-        }}
-      />
-      <Tabs.Screen
-        name="history"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons
-              name="history"
-              color={color}
-              style={styles.tabBarIcon}
-            />
-          ),
-          tabBarLabel: "History",
-          headerTitle: () => <HeaderTitle text={"History"} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialIcons
+                name="home"
+                color={color}
+                style={styles.tabBarIcon}
+              />
+            ),
+            tabBarLabel: "Home",
+            headerTitle: () => <HeaderTitle text={"home"} />,
+          }}
+        />
+        <Tabs.Screen
+          name="analytics"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialIcons
+                name="bar-chart"
+                color={color}
+                style={styles.tabBarIcon}
+              />
+            ),
+            tabBarLabel: "Analytics",
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="history"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialIcons
+                name="history"
+                color={color}
+                style={styles.tabBarIcon}
+              />
+            ),
+            tabBarLabel: "History",
+            headerTitle: () => <HeaderTitle text={"History"} />,
+          }}
+        />
+      </Tabs>
+    </SmsProvider>
   );
 }
