@@ -53,6 +53,7 @@ export default function ModelProvider({ children }) {
 
   /**
    * Renews the ML model memory
+   * @return {number} Length of training data
    */
   const train = async () => {
     const {
@@ -72,6 +73,7 @@ export default function ModelProvider({ children }) {
     setCategories(newCategories);
 
     console.log(`Model trained on ${Xtrain.length} records`);
+    return Xtrain.length;
   };
 
   /**
@@ -94,7 +96,7 @@ export default function ModelProvider({ children }) {
 /**
  * Hook to use the app's ML model
  * @returns {{
- *   train:  () => Promise<void>,
+ *   train:  () => Promise<number>,
  *   predict: (TransactionRecord) => string
  * }} An object containing the method to train the model and predict a transaction's category
  * @throws {Error} In case the hook is called outside the model provider
