@@ -15,7 +15,7 @@
 ## System Requirements
 To run Salio locally, you will need:
 * **Node.js** (v24.x or higher)
-* **npm** (v11.x or higher) or **Yarn**
+* **npm** (v11.x or higher)
 * **Expo CLI** installed globally (`npm install -g expo-cli`)
 * **Android Studio** (for emulator) or a physical Android device for testing native permissions (specifically SMS)
 
