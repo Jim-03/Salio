@@ -4,4 +4,16 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "alembic>=1.19.2",
+    "dotenv>=0.9.9",
+    "fastapi[standard-no-fastapi-cloud-cli]>=0.141.1",
+    "numpy>=2.5.3",
+    "pandas>=3.0.5",
+    "pydantic>=2.13.5",
+    "ruff>=0.16.6",
+    "scikit-learn>=1.9.0",
+    "sqlalchemy>=2.0.52",
+    "supabase>=2.31.0",
+    "websocket>=0.2.1",
+]
