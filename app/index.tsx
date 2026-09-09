@@ -9,8 +9,8 @@ SplashScreen.preventAutoHideAsync();
  * App's root component that redirects to the appropriate screen
  */
 export default function Root() {
-  const [ isFirstTime, setIsFirstTime ] = useState(true);
-  const [ isLoading, setIsLoading ] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     /**
@@ -46,6 +46,6 @@ export default function Root() {
     return <Redirect href={"/introduction"} />;
   }
 
-  // TODO: Redirect home
-  return <></>;
+  // Redirect home
+  return <Redirect href={"/(dashboard)"} />;
 }
