@@ -17,7 +17,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.jimnc.Salio"
+      "package": "com.jimnc.Salio",
+      "permissions": ["READ_SMS", "RECEIVE_SMS"]
     },
     "web": {
       "bundler": "metro",
