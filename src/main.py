@@ -4,6 +4,7 @@ from fastapi import FastAPI, WebSocket
 from starlette.websockets import WebSocketDisconnect
 from uvicorn.main import logger
 
+from src.config.database import engine, get_db
 from src.config.security import SecurityMiddleware
 from src.services.socket_manager import manager
 
@@ -41,5 +42,13 @@ async def websocket(ws: WebSocket):
         logger.warn("Client disconnected")
 
 
-if __name__ == "__main__":
+def bootstrap():
+    """Main application starting point ensuring the app connects to the database before launching"""
+    # Attempt connecting to the database
+    with engine.connect():
+        print("Connected to database")
     uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)
+
+
+if __name__ == "__main__":
+    bootstrap()
