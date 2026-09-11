@@ -1,3 +1,4 @@
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket
 from starlette.websockets import WebSocketDisconnect
@@ -38,3 +39,7 @@ async def websocket(ws: WebSocket):
         # Remove disconnected client from managed list
         await manager.remove(ws)
         logger.warn("Client disconnected")
+
+
+if __name__ == "__main__":
+    uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)
