@@ -6,6 +6,7 @@ from uvicorn.main import logger
 
 from src.config.database import engine, get_db
 from src.config.security import SecurityMiddleware
+from src.routers.address_router import address_router
 from src.services.socket_manager import manager
 
 # Instantiate FastAPI app
@@ -40,6 +41,10 @@ async def websocket(ws: WebSocket):
         # Remove disconnected client from managed list
         await manager.remove(ws)
         logger.warn("Client disconnected")
+
+
+# Attach routers
+app.include_router(address_router)
 
 
 def bootstrap():
