@@ -1,7 +1,9 @@
-import { createContext, useContext, useState } from "react";
-import { ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import SmsAndroid from "react-native-get-sms-android";
+import { useData } from "@/providers/data-provider.component";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator } from "react-native";
+import { client } from "@/lib/client";
 
 const SmsContext = createContext(null);
 
@@ -13,6 +15,87 @@ const SmsContext = createContext(null);
 export default function SmsProvider({ children }) {
   const [isImporting, setIsImporting] = useState(false);
   const BATCH = 100;
+  const { data } = useData();
+  const messages = useRef([]);
+  const addresses = JSON.stringify(data.addresses);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    const importSms = async () => {
+      // Skip double/empty imports
+      if (isImporting || !addresses) return;
+      setIsImporting(true);
+
+      // Temporary array to hold new messages
+      let smsMessages = [];
+
+      // Iterate through each address being tracked
+      for (const address of JSON.parse(addresses)) {
+        // Position to start fetching from
+        let index = 0;
+        console.log(`Importing messages from ${address.name}`);
+        let hasMore = true; // Condition to break loop
+        const addressMessages = [];
+
+        // Fetch until last message
+        while (hasMore) {
+          const batch = await new Promise((resolve, reject) => {
+            const filters = {
+              box: "inbox",
+              indexFrom: index,
+              maxCount: BATCH,
+              address: address.name,
+              //minData: address.last_fetch TODO: Implement timestamp to avoid fetching the entire database
+            };
+
+            SmsAndroid.list(
+              JSON.stringify(filters),
+              (fail) => reject(fail),
+              (_count, smsList) => resolve(JSON.parse(smsList)),
+            );
+          });
+
+          // Add new batch to temporary array
+          batch.forEach((msg) => {
+            addressMessages.push(msg.body);
+          });
+
+          // Continue until the batches are less than maximum batch
+          if (batch.length === BATCH) {
+            index += BATCH;
+          } else {
+            // Stop on last message
+            hasMore = false;
+          }
+        }
+        console.log(`Total -> ${addressMessages.length}`);
+        smsMessages = smsMessages.concat(addressMessages);
+      }
+      console.log(`Total messages -> ${smsMessages.length}`);
+      messages.current = smsMessages;
+
+      setIsImporting(false);
+    };
+
+    importSms();
+  }, [addresses]);
+
+  useEffect(() => {
+    const uploadData = async () => {
+      // Wait until importation/uploading stops
+      // Exit if no new message exists
+      if (isImporting || isUploading || messages.current.length === 0) return;
+      setIsUploading(true);
+      try {
+        await client.post("/messages", { messages: messages.current });
+      } catch (e) {
+        console.error("An error has occurred while adding new messages: ", e);
+      } finally {
+        setIsUploading(false);
+      }
+    };
+    uploadData();
+  }, [isImporting]);
 
   /**
    * Retrieve a list of all SMS senders
@@ -73,7 +156,7 @@ export default function SmsProvider({ children }) {
     );
   }
   return (
-    <SmsContext.Provider value={{ isImporting, getUniqueSenders }}>
+    <SmsContext.Provider value={{ isImporting, getUniqueSenders, isUploading }}>
       {children}
     </SmsContext.Provider>
   );
@@ -82,8 +165,9 @@ export default function SmsProvider({ children }) {
 /**
  * @returns {{
  *   isImporting: boolean,
+ *   isUploading: boolean,
  *   getUniqueSenders: () => Promise<String[]>
- * }} Hook to check if messages are being imported and get a list of unique inbox addresses
+ * }} Hook to check if messages are being imported/uploaded and get a list of unique inbox addresses
  */
 export const useSms = () => {
   const ctx = useContext(SmsContext);
