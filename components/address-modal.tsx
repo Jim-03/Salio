@@ -12,7 +12,15 @@ import { useSms } from "@/providers/sms-provider.component";
 import Lucide from "@react-native-vector-icons/lucide";
 import { client } from "@/lib/client";
 
-export default function AddressModal() {
+interface AddressModalProps {
+  close: () => Promise<void>;
+}
+
+/**
+ * Component displaying the track inbox modal
+ * @param close State function to unmount the component
+ */
+export default function AddressModal({ close }: AddressModalProps) {
   const [data, setData] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedAddresses, setSelectedAddresses] = useState<Set<string>>(
@@ -31,6 +39,7 @@ export default function AddressModal() {
       await client.post("/address", {
         addresses: Array.from(selectedAddresses),
       });
+      await close();
     } catch (e) {
       console.error(
         "An error has occurred while saving the tracked addresses: ",
