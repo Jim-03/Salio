@@ -1,12 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
+from starlette import status
+from uvicorn.main import logger
 
 from src.config.database import get_db
 from src.config.models import Address
-from src.dto.address_dto import AddressDataDto
+from src.dto.address_dto import AddAddressDto, AddressDataDto
 
 address_router = APIRouter(prefix="/address", tags=["Addresses"])
-DatabaseDep = Depends(get_db)
+DatabaseDep: Session = Depends(get_db)
 
 
 @address_router.get(
@@ -40,3 +43,32 @@ def get_addresses(db: Session = DatabaseDep) -> list[AddressDataDto]:
         )
         for address in result
     ]
+
+
+@address_router.post(
+    "", description="Add new addresses to track", status_code=status.HTTP_204_NO_CONTENT
+)
+def add_addresses(request: AddAddressDto, db=DatabaseDep):
+    """Add new addresses to track
+
+    Args:
+        request: request object containing new address data
+        db: Database dependency
+    """
+    try:
+        addresses = [{"address": address} for address in request.addresses]
+
+        # Create an insert statement
+        stmt = insert(Address).values(addresses)
+
+        # Skip similar addresses
+        upsert_stmt = stmt.on_conflict_do_nothing().returning(Address)
+
+        # Persist data
+        db.execute(upsert_stmt)
+
+        # Complete transaction
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.error("An error has occurred while adding addresses: ", e)

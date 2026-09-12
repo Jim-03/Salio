@@ -9,3 +9,10 @@ class AddressDataDto(BaseModel):
     description: str | None = Field(
         default=None, description="Description of the address"
     )
+
+
+class AddAddressDto(BaseModel):
+    addresses: set[str] = Field(
+        description="A list of inbox addresses that will be checked for financial SMS messages",
+        examples=[{"MPESA", "DTB", "John"}],
+    )
