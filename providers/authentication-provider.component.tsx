@@ -1,6 +1,17 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AppState, View } from "react-native";
 import AuthenticationModal from "@/components/authentication-modal";
+
+const AuthenticationContext = createContext<{
+  isAuthenticated: boolean;
+} | null>(null);
 
 /**
  * Re-usable component that locks the app after 1 minute of inactive state
@@ -29,11 +40,26 @@ export default function AuthenticationProvider({
   }, []);
 
   return (
-    <View className={"flex-1"}>
-      {!isAuthenticated && (
-        <AuthenticationModal close={() => setIsAuthenticated(true)} />
-      )}
-      {children}
-    </View>
+    <AuthenticationContext.Provider value={{ isAuthenticated }}>
+      <View className={"flex-1"}>
+        {!isAuthenticated && (
+          <AuthenticationModal close={() => setIsAuthenticated(true)} />
+        )}
+        {children}
+      </View>
+    </AuthenticationContext.Provider>
   );
 }
+
+/**
+ * @returns a state to check if the session is authenticated
+ */
+export const useAuthentication = () => {
+  const ctx = useContext(AuthenticationContext);
+
+  if (!ctx)
+    throw new Error(
+      "useAuthentication may only be used within AuthenticationProvider component!",
+    );
+  return ctx;
+};
