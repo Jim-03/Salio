@@ -183,7 +183,7 @@ const RenderItem = memo(
         }
         onPress={() => onClick(item)}
       >
-        <Text>{item.toUpperCase()}</Text>
+        <Text>{item}</Text>
         {isSelected && <Lucide name={"check"} color={"seagreen"} size={24} />}
       </Pressable>
     );
