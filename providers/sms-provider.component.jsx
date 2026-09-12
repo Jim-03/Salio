@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import SmsAndroid from "react-native-get-sms-android";
 import { useData } from "@/providers/data-provider.component";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityIndicator } from "react-native";
 import { client } from "@/lib/client";
 
 const SmsContext = createContext(null);
@@ -148,13 +146,6 @@ export default function SmsProvider({ children }) {
     return findNextBatch();
   };
 
-  if (isImporting) {
-    return (
-      <SafeAreaView className={"flex-1 justify-center items-center"}>
-        <ActivityIndicator size={50} color={"seagreen"} />
-      </SafeAreaView>
-    );
-  }
   return (
     <SmsContext.Provider value={{ isImporting, getUniqueSenders, isUploading }}>
       {children}
