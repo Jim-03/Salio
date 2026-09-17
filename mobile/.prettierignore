@@ -1,0 +1,8 @@
+# Ignore artifacts:
+build
+coverage
+android
+.expo
+mobile/.claude
+mobile/.vscode
+.idea
