@@ -21,7 +21,9 @@ export default function SmsProvider({ children }) {
   useEffect(() => {
     const importSms = async () => {
       // Skip double/empty imports
-      if (isImporting || !addresses) return;
+      if (isImporting || !addresses) {
+        return;
+      }
       setIsImporting(true);
 
       // Temporary array to hold new messages
@@ -42,14 +44,14 @@ export default function SmsProvider({ children }) {
               box: "inbox",
               indexFrom: index,
               maxCount: BATCH,
-              address: address.name,
+              address: address.name
               //minData: address.last_fetch TODO: Implement timestamp to avoid fetching the entire database
             };
 
             SmsAndroid.list(
               JSON.stringify(filters),
               (fail) => reject(fail),
-              (_count, smsList) => resolve(JSON.parse(smsList)),
+              (_count, smsList) => resolve(JSON.parse(smsList))
             );
           });
 
@@ -82,7 +84,9 @@ export default function SmsProvider({ children }) {
     const uploadData = async () => {
       // Wait until importation/uploading stops
       // Exit if no new message exists
-      if (isImporting || isUploading || messages.current.length === 0) return;
+      if (isImporting || isUploading || messages.current.length === 0) {
+        return;
+      }
       setIsUploading(true);
       try {
         await client.post("/messages", { messages: messages.current });
@@ -96,58 +100,50 @@ export default function SmsProvider({ children }) {
   }, [isImporting]);
 
   /**
-   * Retrieve a list of all SMS senders
-   * @returns {Promise<String[]>} A promise that resolves to a list of all senders in inbox
+   * Get a list of supported financial inbox addresses
+   * @returns {Promise<String[]>} A promise that resolves to a list of supported inbox addresses
    */
-  const getUniqueSenders = () => {
-    const uniqueSenders = new Set(); // Store unique values
-    let index = 0;
+  const getSupportedAddresses = async () => {
+    const existingAddresses = [];
 
-    /**
-     * Fetch the next group of senders in a batch size
-     * @returns {Promise<String[]>} A promise that resolves to a unique list of senders
-     */
-    const findNextBatch = async () => {
-      // Filter to fetch all inbox messages
-      const filter = {
-        box: "inbox",
-        indexFrom: index, // Beginning of Batch
-        maxCount: BATCH, // Batch group
-      };
+    const supportedAddresses = ["MPESA", "NBK"];
 
-      return new Promise((resolve, reject) => {
+    for (const sender of supportedAddresses) {
+      const exists = new Promise((resolve, reject) => {
+        const filter = {
+          box: "inbox",
+          "address": sender,
+          maxCount: 1
+        };
+
         SmsAndroid.list(
           JSON.stringify(filter),
           (fail) => reject(fail),
           (_count, smsList) => {
-            // Extract all messages
-            const messages = JSON.parse(smsList);
+            const parsedData = JSON.parse(smsList);
 
-            // Add to unique set
-            messages.forEach((msg) => uniqueSenders.add(msg.address));
-            const length = messages.length;
-
-            // Recursively call to fetch the next batch until
-            // the length is less than batch size
-            if (length === BATCH) {
-              index += BATCH;
-              resolve(findNextBatch());
+            if (parsedData.length = 1) {
+              resolve(true);
             }
-
-            // Return the current list since all messages have been fetched
-            else {
-              resolve([...uniqueSenders]);
-            }
-          },
+            resolve(false);
+          }
         );
       });
-    };
 
-    return findNextBatch();
+      if (await exists) {
+        existingAddresses.push(sender);
+      }
+    }
+
+    return existingAddresses;
   };
 
   return (
-    <SmsContext.Provider value={{ isImporting, getUniqueSenders, isUploading }}>
+    <SmsContext.Provider value={{
+      isImporting,
+      getUniqueSenders: getSupportedAddresses,
+      isUploading
+    }}>
       {children}
     </SmsContext.Provider>
   );
@@ -163,8 +159,9 @@ export default function SmsProvider({ children }) {
 export const useSms = () => {
   const ctx = useContext(SmsContext);
 
-  if (!ctx)
+  if (!ctx) {
     throw new Error("useSms may only be used within SmsProvider component!");
+  }
 
   return ctx;
 };
