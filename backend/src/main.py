@@ -7,6 +7,7 @@ from uvicorn.main import logger
 from src.config.database import engine, get_db
 from src.config.security import SecurityMiddleware
 from src.routers.address_router import address_router
+from src.routers.messages_router import message_router
 from src.services.socket_manager import manager
 
 # Instantiate FastAPI app
@@ -45,6 +46,7 @@ async def websocket(ws: WebSocket):
 
 # Attach routers
 app.include_router(address_router)
+app.include_router(message_router)
 
 
 def bootstrap():
