@@ -69,9 +69,12 @@ class Mpesa:
             year += 2000
 
         dt = datetime.strptime(time_match.group(1), "%I:%M %p")
-        timestamp = datetime(
-            year, int(month_str), int(day_str), hour=dt.hour, minute=dt.minute
-        ).timestamp()
+        timestamp = int(
+            datetime(
+                year, int(month_str), int(day_str), hour=dt.hour, minute=dt.minute
+            ).timestamp()
+            * 1000
+        )
 
         if recipient_match:
             if len(recipient_match.group(2).split("for account")) == 2:
