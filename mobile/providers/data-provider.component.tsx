@@ -29,7 +29,10 @@ export default function SystemDataProvider({
 }: {
   children: ReactNode;
 }) {
-  const [data, setData] = useState<SystemData>({});
+  const [data, setData] = useState<SystemData>({
+    addresses: [],
+    lastImport: null,
+  });
   const [isOnline, setIsOnline] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(true);
 
