@@ -1,7 +1,7 @@
-import {createContext, useContext, useEffect, useRef, useState} from 'react';
-import SmsAndroid from 'react-native-get-sms-android';
-import {useData} from '@/providers/data-provider.component';
-import {client} from '@/lib/client';
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import SmsAndroid from "react-native-get-sms-android";
+import { useData } from "@/providers/data-provider.component";
+import { client } from "@/lib/client";
 
 const SmsContext = createContext(null);
 
@@ -10,10 +10,10 @@ const SmsContext = createContext(null);
  * @param {ReactNode} children Child components relying on SMS props
  * @returns {React.JSX.Element}
  */
-export default function SmsProvider({children}) {
+export default function SmsProvider({ children }) {
   const [isImporting, setIsImporting] = useState(false);
   const BATCH = 100;
-  const {data} = useData();
+  const { data } = useData();
   const messages = useRef([]);
   const addresses = JSON.stringify(data.addresses);
   const [isUploading, setIsUploading] = useState(false);
@@ -21,9 +21,10 @@ export default function SmsProvider({children}) {
   useEffect(() => {
     const importSms = async () => {
       // Skip double/empty imports
-      if (isImporting || !addresses) {
+      if (isImporting || !addresses || data.lastImport === null) {
         return;
       }
+
       setIsImporting(true);
 
       // Temporary array to hold new messages
@@ -41,17 +42,17 @@ export default function SmsProvider({children}) {
         while (hasMore) {
           const batch = await new Promise((resolve, reject) => {
             const filters = {
-              box: 'inbox',
+              box: "inbox",
               indexFrom: index,
               maxCount: BATCH,
               address: address.name,
-              //minData: address.last_fetch TODO: Implement timestamp to avoid fetching the entire database
+              minDate: data.lastImport,
             };
 
             SmsAndroid.list(
-                JSON.stringify(filters),
-                (fail) => reject(fail),
-                (_count, smsList) => resolve(JSON.parse(smsList)),
+              JSON.stringify(filters),
+              (fail) => reject(fail),
+              (_count, smsList) => resolve(JSON.parse(smsList)),
             );
           });
 
@@ -69,8 +70,7 @@ export default function SmsProvider({children}) {
           }
         }
         console.log(`Total -> ${addressMessages.length}`);
-        smsMessages.push(
-            {address: address.name, messages: addressMessages});
+        smsMessages.push({ address: address.name, messages: addressMessages });
       }
       messages.current = smsMessages;
 
@@ -78,7 +78,7 @@ export default function SmsProvider({children}) {
     };
 
     importSms();
-  }, [addresses]);
+  }, [data.lastImport, addresses]);
 
   useEffect(() => {
     const uploadData = async () => {
@@ -89,15 +89,15 @@ export default function SmsProvider({children}) {
       }
       setIsUploading(true);
       try {
-        await client.post('/messages', {messages: messages.current});
+        await client.post("/messages", { messages: messages.current });
       } catch (e) {
-        console.error('An error has occurred while adding new messages: ', e);
+        console.error("An error has occurred while adding new messages: ", e);
       } finally {
         setIsUploading(false);
       }
     };
     uploadData();
-  }, [isImporting]);
+  }, [isImporting, data.lastImport]);
 
   /**
    * Get a list of supported financial inbox addresses
@@ -106,27 +106,27 @@ export default function SmsProvider({children}) {
   const getSupportedAddresses = async () => {
     const existingAddresses = [];
 
-    const supportedAddresses = ['MPESA', 'NBK'];
+    const supportedAddresses = ["MPESA", "NBK"];
 
     for (const sender of supportedAddresses) {
       const exists = new Promise((resolve, reject) => {
         const filter = {
-          box: 'inbox',
-          'address': sender,
+          box: "inbox",
+          address: sender,
           maxCount: 1,
         };
 
         SmsAndroid.list(
-            JSON.stringify(filter),
-            (fail) => reject(fail),
-            (_count, smsList) => {
-              const parsedData = JSON.parse(smsList);
+          JSON.stringify(filter),
+          (fail) => reject(fail),
+          (_count, smsList) => {
+            const parsedData = JSON.parse(smsList);
 
-              if (parsedData.length == 1) {
-                resolve(true);
-              }
-              resolve(false);
-            },
+            if (parsedData.length == 1) {
+              resolve(true);
+            }
+            resolve(false);
+          },
         );
       });
 
@@ -139,13 +139,15 @@ export default function SmsProvider({children}) {
   };
 
   return (
-      <SmsContext.Provider value={{
+    <SmsContext.Provider
+      value={{
         isImporting,
         getUniqueSenders: getSupportedAddresses,
         isUploading,
-      }}>
-        {children}
-      </SmsContext.Provider>
+      }}
+    >
+      {children}
+    </SmsContext.Provider>
   );
 }
 
@@ -160,7 +162,7 @@ export const useSms = () => {
   const ctx = useContext(SmsContext);
 
   if (!ctx) {
-    throw new Error('useSms may only be used within SmsProvider component!');
+    throw new Error("useSms may only be used within SmsProvider component!");
   }
 
   return ctx;
