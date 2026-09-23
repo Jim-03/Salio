@@ -4,25 +4,44 @@ import { client } from "@/lib/client";
 import { useData } from "@/providers/data-provider.component";
 import { AxiosError } from "axios";
 import AddressModal from "@/components/address-modal";
-import { useAuthentication } from "@/providers/authentication-provider.component";
-import { Address } from "@/lib/dto";
+import {
+  useAuthentication
+} from "@/providers/authentication-provider.component";
 
 /**
  * Component rendering the home tab
  */
 export default function Home() {
   const { setData } = useData();
-  const [ showAddressForm, setShowAddressForm ] = useState(false);
+  const [showAddressForm, setShowAddressForm] = useState(false);
   const { isAuthenticated } = useAuthentication();
 
-  const loadData = async () => {
+  /**
+   * Retrieve data related to importing sms messages
+   */
+  const loadImportData = async () => {
     if (!isAuthenticated) return;
     try {
-      const response = await client.get("/address");
-      const data = response.data as Address[];
+      const [timestampResponse, addressResponse] = await Promise.all([
+        client.get("/dashboard/last-import"),
+        client.get("/address"),
+      ]);
 
-      if (data) {
-        setData((prev) => ({ ...prev, addresses: data }));
+      const [timestampData, addressData] = [
+        timestampResponse.data,
+        addressResponse.data,
+      ];
+
+      if (timestampData) {
+        console.log(timestampData);
+        setData((prev) => ({
+          ...prev,
+          lastImport: timestampData.timestamp || 0,
+        }));
+      }
+
+      if (addressData) {
+        setData((prev) => ({ ...prev, addresses: addressData }));
       }
     } catch (e) {
       if (e instanceof AxiosError) {
@@ -33,15 +52,16 @@ export default function Home() {
     }
   };
   useEffect(() => {
-    loadData();
-  }, [ isAuthenticated ]);
+    loadImportData();
+  }, [isAuthenticated]);
+
   return (
     <View>
       {showAddressForm && (
         <AddressModal
           close={async () => {
             setShowAddressForm(false);
-            await loadData();
+            await loadImportData();
           }}
         />
       )}
