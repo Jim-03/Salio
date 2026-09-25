@@ -1,52 +1,19 @@
-import SystemDataProvider from "@/providers/data-provider.component";
-import { Tabs } from "expo-router";
-import AuthenticationProvider from "@/providers/authentication-provider.component";
-import Lucide from "@react-native-vector-icons/lucide";
-import SmsProvider from "@/providers/sms-provider.component";
+import SystemDataProvider from '@/providers/data-provider.component';
+import AuthenticationProvider
+  from '@/providers/authentication-provider.component';
+import SmsProvider from '@/providers/sms-provider.component';
+import TabBar from '@/components/bottom-tab';
+import {Tabs} from 'expo-router';
 
 /**
  * Main layout for dashboard screens
  */
 export default function DashboardLayout() {
-  const iconSize = 24;
   return (
     <AuthenticationProvider>
       <SystemDataProvider>
         <SmsProvider>
-          <Tabs>
-            <Tabs.Screen
-              name={"index"}
-              options={{
-                title: "Home",
-                tabBarIcon: () => <Lucide name={"home"} size={iconSize} />,
-              }}
-            />
-            <Tabs.Screen
-              name={"analysis"}
-              options={{
-                title: "Analysis",
-                tabBarIcon: () => (
-                  <Lucide name={"chart-no-axes-column"} size={iconSize} />
-                ),
-              }}
-            />
-            <Tabs.Screen
-              name={"history"}
-              options={{
-                title: "Transactions",
-                tabBarIcon: () => (
-                  <Lucide name={"arrow-left-right"} size={iconSize} />
-                ),
-              }}
-            />
-            <Tabs.Screen
-              name={"settings"}
-              options={{
-                title: "Settings",
-                tabBarIcon: () => <Lucide name={"settings"} size={iconSize} />,
-              }}
-            />
-          </Tabs>
+          <Tabs tabBar={(props) => <TabBar {...props} />} />
         </SmsProvider>
       </SystemDataProvider>
     </AuthenticationProvider>
