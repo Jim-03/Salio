@@ -1,6 +1,7 @@
 import uuid
 
-from sqlalchemy import Column, Double, Float, ForeignKey, Integer, String
+from sqlalchemy import Column, Double, Float, ForeignKey, Integer, String, \
+  BigInteger
 from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -24,7 +25,7 @@ class TransactionModel(Base):
     amount = Column(Double(precision=2), nullable=False, default=0.00)
     vendor = Column(String)
     recipient = Column(String)
-    timestamp = Column(Float, nullable=False)
+    timestamp = Column(BigInteger, nullable=False)
     balance = Column(Double(precision=2), nullable=False, default=0.00)
     sms = Column(String, nullable=False)
     cost = Column(Double(precision=2), default=0.00, nullable=False)
