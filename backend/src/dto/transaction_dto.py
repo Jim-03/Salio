@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 
@@ -52,3 +54,39 @@ class Transaction(BaseModel):
 
 class TransactionsList(BaseModel):
     transactions: list[Transaction] = Field(description="A list of transaction objects")
+
+
+class TransactionData(BaseModel):
+    id: UUID = Field(description="The transaction's unique identifier")
+    address_id: int = Field(
+        description="The address the transaction belongs to", examples=[1]
+    )
+    code: str = Field(examples=["OISJIORJTWE"])
+    amount: float = Field(
+        description="Amount being transacted", examples=[3000.0, 55.00]
+    )
+    vendor: str | None = Field(
+        description="Company owning the recipient's account", examples=["ABSA BANK"]
+    )
+    recipient: str | None = Field(
+        description="The receiver of the money", examples=["User 223", "0712345678"]
+    )
+    timestamp: int = Field(
+        description="The timestamp when the transaction was made",
+        examples=[24175687567],
+    )
+    balance: float = Field(
+        description="The remaining balance after transaction",
+        examples=[0.00, 300_000.00],
+    )
+    sms: str = Field(
+        description="The actual SMS text",
+        examples=[
+            "Confirmed you have received Kshs. 2,000.00 from EQUITY BANK. New balance is 20,000.00."
+        ],
+    )
+    cost: float = Field(description="Transaction cost", examples=[0.0, 35.00])
+    action: str = Field(
+        description="The action being done on the transactions",
+        examples=["paid to", "sent to", "reverse", "receive"],
+    )
