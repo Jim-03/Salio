@@ -6,11 +6,12 @@ import { AxiosError } from "axios";
 import AddressModal from "@/components/address-modal";
 import { useAuthentication } from "@/providers/authentication-provider.component";
 import Lucide from "@react-native-vector-icons/lucide";
-import { useRouter } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { TransactionRow } from "@/components/transaction-row";
 import { useBottomTabBarHeight } from "expo-router/build/react-navigation/bottom-tabs";
 import { useSms } from "@/providers/sms-provider.component";
 import { HomeData } from "@/lib/dto";
+import Header, { NotificationIcon } from "@/components/header";
 
 /**
  * Component rendering the home tab
@@ -105,6 +106,11 @@ export default function Home() {
       className={"flex-1 p-5 dark:bg-slate-900 bg-amber-50"}
       contentContainerStyle={{ paddingBottom: tabHeight + 80 }}
     >
+      <Tabs.Screen
+        options={{
+          header: () => <Header headerRight={<NotificationIcon />} />,
+        }}
+      />
       {showAddressForm && (
         <AddressModal
           close={async () => {
