@@ -32,6 +32,7 @@ export default function SystemDataProvider({
   const [data, setData] = useState<SystemData>({
     addresses: [],
     lastImport: null,
+    transactions: [],
   });
   const [isOnline, setIsOnline] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(true);
