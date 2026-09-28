@@ -23,3 +23,10 @@ export interface Transaction {
   action: string;
   sms: string;
 }
+
+export interface HomeData {
+  balance: number;
+  last_5_transactions: Transaction[];
+  income: number;
+  expense: number;
+}

@@ -47,5 +47,5 @@ export default function Root() {
   }
 
   // Redirect home
-  return <Redirect href={"/(dashboard)"} />;
+  return <Redirect href={"/home"} />;
 }
