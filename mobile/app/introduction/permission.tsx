@@ -26,7 +26,7 @@ export default function Permission() {
      */
     if (grant === PermissionsAndroid.RESULTS.GRANTED) {
       await AsyncStorage.setItemAsync("isFirstTime", JSON.stringify(false)); // Completed introduction
-      router.replace("/(dashboard)");
+      router.replace("/home");
     }
 
     return;
