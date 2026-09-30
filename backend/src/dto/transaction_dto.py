@@ -1,6 +1,7 @@
+import enum
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Metadata(BaseModel):
@@ -57,6 +58,7 @@ class TransactionsList(BaseModel):
 
 
 class TransactionData(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: UUID = Field(description="The transaction's unique identifier")
     address_id: int = Field(
         description="The address the transaction belongs to", examples=[1]
@@ -89,4 +91,41 @@ class TransactionData(BaseModel):
     action: str = Field(
         description="The action being done on the transactions",
         examples=["paid to", "sent to", "reverse", "receive"],
+    )
+
+
+class TransactionDirection(str, enum.Enum):
+    ALL = "ALL"
+    INCOME = "INCOME"
+    SPENT = "SPENT"
+
+
+class GetTransactionsParams(BaseModel):
+    start: int = Field(description="The timestamp of the start of a duration")
+    end: int = Field(description="The timestamp of the end of a duration")
+    direction: TransactionDirection = Field(
+        description="The direction where the transaction is heading based"
+    )
+    search_term: str | None = Field(
+        default=None,
+        description="A key word to search in a transaction's vendor/recipient name",
+        examples=["John", "Bank"],
+    )
+    limit: int | None = Field(
+        default=10,
+        description="The number of transactions to fetch. 1-indexed",
+        examples=[10, 15],
+    )
+    page: int = Field(
+        default=0,
+        description="The page to fetch from",
+        examples=[1, 2, 3],
+    )
+
+
+class GetTransactionsResponse(BaseModel):
+    transactions: list[TransactionData] = Field(description="Transaction data")
+    page: int = Field(description="Current page")
+    number_of_elements: int = Field(
+        description="The number of transactions in the current page"
     )

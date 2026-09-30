@@ -7,7 +7,12 @@ from uvicorn.main import logger
 from src.config.database import get_db
 from src.config.models import TransactionModel
 from src.dto.dashboard_dto import HomeData, LastTimestamp
-from src.dto.transaction_dto import TransactionData
+from src.dto.transaction_dto import (
+    GetTransactionsParams,
+    GetTransactionsResponse,
+    TransactionData,
+)
+from src.services.dashboard_service import DashboardService
 
 dashboard_router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
@@ -109,4 +114,21 @@ def get_home(db: Session = DatabaseDep) -> HomeData:
             )
             for tx in last_5_transactions
         ],
+    )
+
+
+@dashboard_router.get(
+    "/transactions",
+    response_model=GetTransactionsResponse,
+    description="Retrieve a list of all transactions given filters",
+)
+def get_transactions(
+    params: GetTransactionsParams = Depends(), service: DashboardService = Depends()
+):
+    transactions = service.get_transactions(params)
+
+    return GetTransactionsResponse(
+        transactions=transactions,
+        number_of_elements=len(transactions),
+        page=params.page,
     )
