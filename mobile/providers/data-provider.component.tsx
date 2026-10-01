@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { SystemData } from "@/lib/dto";
+import { SystemData, Transaction } from "@/lib/dto";
 import { AppState } from "react-native";
 
 type SystemDataContextProps = {
@@ -32,7 +32,7 @@ export default function SystemDataProvider({
   const [data, setData] = useState<SystemData>({
     addresses: [],
     lastImport: null,
-    transactions: [],
+    transactions: new Set<Transaction>(),
   });
   const [isOnline, setIsOnline] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(true);

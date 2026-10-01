@@ -84,7 +84,10 @@ export default function Home() {
           setOutgoing(data.expense);
           setData((prev) => ({
             ...prev,
-            transactions: data.last_5_transactions,
+            transactions: new Set([
+              ...prev.transactions,
+              ...data.last_5_transactions,
+            ]),
           }));
         }
       } catch (e) {

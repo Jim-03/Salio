@@ -1,7 +1,7 @@
 export interface SystemData {
   addresses: Address[]; // Inbox addresses
   lastImport: number | null; // Last transaction's timestamp if provided
-  transactions: Transaction[];
+  transactions: Set<Transaction>;
 }
 
 export interface Address {
