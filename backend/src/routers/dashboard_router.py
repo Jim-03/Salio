@@ -126,9 +126,12 @@ def get_transactions(
     params: GetTransactionsParams = Depends(), service: DashboardService = Depends()
 ):
     transactions = service.get_transactions(params)
+    income, expense = service.get_totals(params.start, params.end)
 
     return GetTransactionsResponse(
         transactions=transactions,
         number_of_elements=len(transactions),
         page=params.page,
+        income=float(income),
+        expense=float(expense),
     )

@@ -129,3 +129,9 @@ class GetTransactionsResponse(BaseModel):
     number_of_elements: int = Field(
         description="The number of transactions in the current page"
     )
+    income: float = Field(
+        description="The total earned during the specified period", default=0
+    )
+    expense: float = Field(
+        description="The total expense during the specified period", default=0
+    )

@@ -1,7 +1,8 @@
 from fastapi import Depends, HTTPException
 from gevent.pool import pass_value
-from sqlalchemy import and_, not_
+from sqlalchemy import and_, case, func, not_
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import coalesce
 
 from src.config.database import get_db
 from src.config.models import TransactionModel
@@ -18,6 +19,10 @@ class DashboardService:
 
     def __init__(self, db: Session = DatabaseDep):
         self.repository = db
+        self.income_clause = TransactionModel.action.icontains("receive") | (
+            TransactionModel.action.icontains("reverse")
+            & TransactionModel.sms.contains("credited")
+        )
 
     def get_transactions(self, params: GetTransactionsParams):
         """Retrieve a list of transactions
@@ -47,19 +52,16 @@ class DashboardService:
             )
 
         # Apply the transactional direction if incoming/spent is specified
-        direction_clause = TransactionModel.action.icontains("receive") | (
-            TransactionModel.action.icontains("reverse")
-            & TransactionModel.sms.contains("credited")
-        )
         if params.direction == TransactionDirection.SPENT:
-            conditions.append(not_(direction_clause))
+            conditions.append(not_(self.income_clause))
         elif params.direction == TransactionDirection.INCOME:
-            conditions.append(direction_clause)
+            conditions.append(self.income_clause)
 
         # Build query
         query = (
             self.repository.query(TransactionModel)
             .filter(and_(*conditions))
+            .order_by(TransactionModel.timestamp.desc())
             .offset(params.page)
         )
 
@@ -71,3 +73,36 @@ class DashboardService:
         transactions = query.all()
 
         return transactions
+
+    def get_totals(self, start: int, end: int):
+        """Get the total income and expense within a specified period
+        Args:
+          start: The timestamp starting the period
+          end: The timestamp ending the period
+        Returns:
+            (tuple[float, float]): A tuple containing the income and expense of the specified period
+        """
+        total_income_calc = func.sum(
+            case((self.income_clause, TransactionModel.amount), else_=0).label("income")
+        )
+
+        total_expense_calc = func.sum(
+            case((not_(self.income_clause), TransactionModel.amount), else_=0).label(
+                "expense"
+            )
+        )
+        total_cost_calc = func.sum(
+            case((not_(self.income_clause), TransactionModel.cost), else_=0).label(
+                "cost"
+            )
+        )
+
+        query = (
+            self.repository.query(
+                total_income_calc, total_expense_calc, total_cost_calc
+            )
+            .filter(TransactionModel.timestamp.between(start, end))
+            .first()
+        )
+        income, expense, cost = query or (0, 0, 0)
+        return income, expense + cost
