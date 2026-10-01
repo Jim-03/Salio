@@ -62,7 +62,7 @@ class DashboardService:
             self.repository.query(TransactionModel)
             .filter(and_(*conditions))
             .order_by(TransactionModel.timestamp.desc())
-            .offset(params.page)
+            .offset(params.page * params.limit)
         )
 
         # Apply limit if provided
