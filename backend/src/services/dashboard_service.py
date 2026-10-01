@@ -83,26 +83,27 @@ class DashboardService:
             (tuple[float, float]): A tuple containing the income and expense of the specified period
         """
         total_income_calc = func.sum(
-            case((self.income_clause, TransactionModel.amount), else_=0).label("income")
-        )
+            case((self.income_clause, TransactionModel.amount), else_=0)
+        ).label("income")
+        
 
         total_expense_calc = func.sum(
-            case((not_(self.income_clause), TransactionModel.amount), else_=0).label(
-                "expense"
-            )
-        )
-        total_cost_calc = func.sum(
-            case((not_(self.income_clause), TransactionModel.cost), else_=0).label(
-                "cost"
-            )
-        )
+            case((not_(self.income_clause), TransactionModel.amount), else_=0)
+        ).label("expense")
 
-        query = (
+        total_cost_calc = func.sum(
+            case((not_(self.income_clause), TransactionModel.cost), else_=0)
+        ).label("cost")
+
+        row = (
             self.repository.query(
                 total_income_calc, total_expense_calc, total_cost_calc
             )
             .filter(TransactionModel.timestamp.between(start, end))
             .first()
         )
-        income, expense, cost = query or (0, 0, 0)
+        income = row.income if row.income else 0
+        expense = row.expense if row.expense else 0
+        cost = row.cost if row.cost else 0
+
         return income, expense + cost
