@@ -113,7 +113,7 @@ class GetTransactionsParams(BaseModel):
     )
     limit: int | None = Field(
         default=10,
-        description="The number of transactions to fetch. 1-indexed",
+        description="The number of transactions to fetch",
         examples=[10, 15],
     )
     page: int = Field(
