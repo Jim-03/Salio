@@ -54,66 +54,32 @@ def get_last_import(db: Session = DatabaseDep) -> LastTimestamp:
     description="Retrieve details displayed on the home tab",
     name="Get home data",
 )
-def get_home(db: Session = DatabaseDep) -> HomeData:
+def get_home(service: DashboardService = Depends()) -> HomeData:
     """Retrieve data to be displayed in the home tab
 
     Args:
-      db(Session): Database dependency
+      service(DashboardService): Service dependency
 
     Returns:
       (HomeData): An object containing the home tab data
     """
-
+    # Get current month's boundaries
     today = datetime.now()
     start_of_month = int(datetime(today.year, today.month, 1).timestamp() * 1000)
     end_time = int(today.timestamp() * 1000)
 
-    q_last_5_transaction = (
-        db.query(TransactionModel).order_by(TransactionModel.timestamp.desc()).limit(5)
-    )
+    # Fetch last 5 transactions
+    last_5_transactions = service.get_summary()
+    last_transaction = last_5_transactions[0] if last_5_transactions else None
 
-    q_monthly_transactions = db.query(TransactionModel).filter(
-        TransactionModel.timestamp.between(start_of_month, end_time)
-    )
-
-    all_transactions = (
-        q_last_5_transaction.union(q_monthly_transactions)
-        .order_by(TransactionModel.timestamp.desc())
-        .all()
-    )
-
-    last_5_transactions = all_transactions[:5]
-    last_transaction = all_transactions[0] if all_transactions else None
-
-    income = 0
-    expense = float(last_transaction.balance - all_transactions[-1].balance or 0)
-
-    for tx in all_transactions:
-        if tx.timestamp >= start_of_month and (
-            ("receive" in tx.action) or ("reverse" in tx.action and "credit" in tx.sms)
-        ):
-            income = income + tx.amount
+    # Calculate income and expense for current month
+    income, expense = service.get_totals(start_of_month, end_time)
 
     return HomeData(
         balance=last_transaction.balance or 0,
         income=income,
         expense=expense,
-        last_5_transactions=[
-            TransactionData(
-                id=tx.id,
-                address_id=tx.address_id,
-                code=tx.code,
-                amount=tx.amount,
-                vendor=tx.vendor,
-                recipient=tx.recipient,
-                timestamp=tx.timestamp,
-                balance=tx.balance,
-                sms=tx.sms,
-                cost=tx.cost,
-                action=tx.action,
-            )
-            for tx in last_5_transactions
-        ],
+        last_5_transactions=last_5_transactions,
     )
 
 

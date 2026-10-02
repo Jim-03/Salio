@@ -74,7 +74,7 @@ class DashboardService:
 
         return transactions
 
-    def get_totals(self, start: int, end: int):
+    def get_totals(self, start: int, end: int) -> tuple[float, float]:
         """Get the total income and expense within a specified period
         Args:
           start: The timestamp starting the period
@@ -85,7 +85,6 @@ class DashboardService:
         total_income_calc = func.sum(
             case((self.income_clause, TransactionModel.amount), else_=0)
         ).label("income")
-        
 
         total_expense_calc = func.sum(
             case((not_(self.income_clause), TransactionModel.amount), else_=0)
@@ -107,3 +106,13 @@ class DashboardService:
         cost = row.cost if row.cost else 0
 
         return income, expense + cost
+
+    def get_summary(self) -> list[TransactionModel]:
+        """Retrieve a list of the last 5 transactions"""
+
+        return (
+            self.repository.query(TransactionModel)
+            .order_by(TransactionModel.timestamp.desc())
+            .limit(5)
+            .all()
+        )
