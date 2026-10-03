@@ -1,17 +1,17 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { useEffect, useState } from "react";
-import { client } from "@/lib/client";
-import { useData } from "@/providers/data-provider.component";
-import { AxiosError } from "axios";
 import AddressModal from "@/components/address-modal";
-import { useAuthentication } from "@/providers/authentication-provider.component";
-import Lucide from "@react-native-vector-icons/lucide";
-import { Tabs, useRouter } from "expo-router";
-import { TransactionRow } from "@/components/transaction-row";
-import { useBottomTabBarHeight } from "expo-router/build/react-navigation/bottom-tabs";
-import { useSms } from "@/providers/sms-provider.component";
-import { HomeData } from "@/lib/dto";
 import Header, { NotificationIcon } from "@/components/header";
+import { TransactionRow } from "@/components/transaction-row";
+import { client } from "@/lib/client";
+import { HomeData } from "@/lib/dto";
+import { useAuthentication } from "@/providers/authentication-provider.component";
+import { useData } from "@/providers/data-provider.component";
+import { useSms } from "@/providers/sms-provider.component";
+import Lucide from "@react-native-vector-icons/lucide";
+import { AxiosError } from "axios";
+import { Tabs, useRouter } from "expo-router";
+import { useBottomTabBarHeight } from "expo-router/build/react-navigation/bottom-tabs";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 /**
  * Component rendering the home tab
@@ -216,12 +216,12 @@ const Expenditure = ({
 const Transactions = () => {
   const { data } = useData();
   const [transactions, setTransactions] = useState(
-    data.transactions.slice(0, 4),
+    Array.from(data.transactions).slice(0, 5),
   );
   const router = useRouter();
 
   useEffect(() => {
-    setTransactions(data.transactions.slice(0, 5));
+    setTransactions(Array.from(data.transactions).slice(0, 5));
   }, [data.transactions]);
 
   return (
