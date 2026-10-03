@@ -1,9 +1,9 @@
+import Lucide from "@react-native-vector-icons/lucide";
+import { useRouter } from "expo-router";
+import { ReactNode } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import Animated from "react-native-reanimated";
-import Lucide from "@react-native-vector-icons/lucide";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ReactNode } from "react";
-import { useRouter } from "expo-router";
 
 interface HeaderProps {
   title?: string;
@@ -64,6 +64,19 @@ export const NotificationIcon = () => {
         )}
         <Lucide name={"bell"} size={24} color={"white"} />
       </Animated.View>
+    </TouchableOpacity>
+  );
+};
+
+/**
+ * Re-usable component rendering the search icon
+ */
+export const SearchButton = () => {
+  const router = useRouter();
+
+  return (
+    <TouchableOpacity onPress={() => router.push("/search-transactions")}>
+      <Lucide name="search" size={24} color={"white"} />
     </TouchableOpacity>
   );
 };
