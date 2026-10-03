@@ -30,3 +30,11 @@ export interface HomeData {
   income: number;
   expense: number;
 }
+
+export interface HistoryData {
+  number_of_elements: number;
+  transactions: Transaction[];
+  page: number;
+  income: number;
+  expense: number;
+}
