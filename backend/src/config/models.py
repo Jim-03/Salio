@@ -1,8 +1,15 @@
 import uuid
 
-from sqlalchemy import Column, Double, Float, ForeignKey, Integer, String, \
-  BigInteger
-from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    Double,
+    ForeignKey,
+    Integer,
+    String,
+)
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -14,6 +21,10 @@ class Address(Base):
     address = Column(String, nullable=False, unique=True)
     description = Column(String)
 
+class CategoryModel(Base):
+    __tablename__ = "categories"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True, nullable=False)
 
 class TransactionModel(Base):
     __tablename__ = "transactions"
@@ -30,3 +41,5 @@ class TransactionModel(Base):
     sms = Column(String, nullable=False)
     cost = Column(Double(precision=2), default=0.00, nullable=False)
     action = Column(String)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    autocategorized = Column(Boolean, server_default="false", nullable=False)

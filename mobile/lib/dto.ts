@@ -22,6 +22,8 @@ export interface Transaction {
   cost: number;
   action: string;
   sms: string;
+  category_id: number;
+  autocategorized: boolean;
 }
 
 export interface HomeData {
@@ -37,4 +39,9 @@ export interface HistoryData {
   page: number;
   income: number;
   expense: number;
+}
+
+export interface Category {
+  id: number;
+  name: string;
 }
