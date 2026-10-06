@@ -1,6 +1,7 @@
 import { Transaction } from "@/lib/dto";
 import { useData } from "@/providers/data-provider.component";
-import { Pressable, Text, View } from "react-native";
+import { Modal, Pressable, Text, View } from "react-native";
+import { useState } from "react";
 
 /**
  * Component rendering transaction rows
@@ -12,6 +13,7 @@ export const TransactionRow = ({
 }: {
   transaction: Transaction;
 }) => {
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
   const date = new Date(transaction.timestamp);
   const { data } = useData();
   const incoming =
@@ -34,7 +36,15 @@ export const TransactionRow = ({
       className={
         "mt-2.5 mb-2.5 flex-row items-center border-b border-b-black/10 dark:border-b-white/30 pb-2 pt-2 h-20"
       }
+      onPress={() => setShowTransactionModal(true)}
     >
+      {showTransactionModal && (
+        <TransactionModal
+          transaction={transaction}
+          close={() => setShowTransactionModal(false)}
+          isIncome={incoming}
+        />
+      )}
       {/* Initials */}
       <Text
         className={
@@ -75,5 +85,89 @@ export const TransactionRow = ({
         </Text>
       </View>
     </Pressable>
+  );
+};
+
+/**
+ * Re-usable component rendering a transaction's details
+ * @param props
+ * @param props.transaction Transaction data
+ * @param props.close State function to close modal
+ * @param props.isIncome Condition to confirm if the transaction is an income/expense
+ */
+const TransactionModal = ({
+  transaction,
+  close,
+  isIncome,
+}: {
+  transaction: Transaction;
+  close: () => void;
+  isIncome: boolean;
+}) => {
+  const { data } = useData();
+  const transactionData = [
+    { "Transaction code": transaction.code },
+    { Date: new Date(transaction.timestamp) },
+    { Amount: transaction.amount },
+    { "Transaction cost": transaction.cost },
+    {
+      Platform: data.addresses.find((a) => a.id === transaction.address_id)
+        ?.name,
+    },
+  ];
+  const color = isIncome
+    ? "text-green-800 dark:text-green-600"
+    : "text-red-600";
+  return (
+    <Modal animationType={"fade"} onRequestClose={close} transparent>
+      {/* Background */}
+      <View className={"flex-1 bg-black/60 justify-center items-center"}>
+        {/* Main */}
+        <View
+          className={
+            "bg-[rgb(245_245_245)] dark:bg-gray-600 p-5 rounded-xl elevation-md w-[90%]"
+          }
+        >
+          {/* Header */}
+          <Text className={`text-center font-bold ${color} text-2xl mb-2`}>
+            {transaction.recipient}
+          </Text>
+
+          {/* Content */}
+          {transactionData.map((t, k) => {
+            const label = Object.keys(t)[0];
+            let value = Object.values(t)[0];
+
+            if (value instanceof Date) {
+              value = value.toDateString();
+            }
+
+            return (
+              <View key={k} className={"flex-row items-center"}>
+                <Text
+                  className={"w-1/2 mt-2 mb-2 font-semibold dark:text-amber-50"}
+                >
+                  {label}:{" "}
+                </Text>
+                <Text
+                  className={`${!isNaN(value) && label === "Amount" ? color : "dark:text-white"}`}
+                >
+                  {!isNaN(value) ? `Kshs. ${value}` : value}
+                </Text>
+              </View>
+            );
+          })}
+
+          {/* SMS message */}
+          <Text
+            className={
+              "bg-black/15 dark:text-white p-4 text-justify rounded-xl mt-5"
+            }
+          >
+            {transaction.sms}
+          </Text>
+        </View>
+      </View>
+    </Modal>
   );
 };
