@@ -1,7 +1,8 @@
 import { Transaction } from "@/lib/dto";
 import { useData } from "@/providers/data-provider.component";
 import { Modal, Pressable, Text, View } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import CategoryPicker from "@/components/category-picker";
 
 /**
  * Component rendering transaction rows
@@ -118,6 +119,17 @@ const TransactionModal = ({
   const color = isIncome
     ? "text-green-800 dark:text-green-600"
     : "text-red-600";
+
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(
+    transaction.category_id || 0,
+  );
+
+  useEffect(() => {
+    // TODO: Update transaction
+    transaction.category_id = selectedCategory;
+  }, [selectedCategory]);
+
   return (
     <Modal animationType={"fade"} onRequestClose={close} transparent>
       {/* Background */}
@@ -166,6 +178,31 @@ const TransactionModal = ({
           >
             {transaction.sms}
           </Text>
+
+          {/* Category */}
+          {showCategoryPicker && (
+            <CategoryPicker
+              close={() => setShowCategoryPicker(false)}
+              category={selectedCategory}
+              changeCategory={setSelectedCategory}
+            />
+          )}
+          <View className={"flex-row items-center mt-5"}>
+            <Text className={"font-semibold dark:text-white mr-5"}>
+              Category:
+            </Text>
+            <Pressable
+              className={"bg-green-900 rounded"}
+              onPress={() => setShowCategoryPicker(true)}
+            >
+              <Text className={" p-2.5  text-white"}>
+                {transaction.category_id
+                  ? data.categories.get(transaction.category_id)?.name
+                  : "UNKNOWN"}
+              </Text>
+            </Pressable>
+          </View>
+          {transaction.autocategorized && <Text></Text>}
         </View>
       </View>
     </Modal>

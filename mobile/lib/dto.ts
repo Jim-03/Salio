@@ -1,7 +1,9 @@
 export interface SystemData {
   addresses: Address[]; // Inbox addresses
   lastImport: number | null; // Last transaction's timestamp if provided
+  // TODO: Modify to maps
   transactions: Set<Transaction>;
+  categories: Map<number, Category>;
 }
 
 export interface Address {

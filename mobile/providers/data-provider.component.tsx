@@ -8,8 +8,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { SystemData, Transaction } from "@/lib/dto";
+import { Category, SystemData, Transaction } from "@/lib/dto";
 import { AppState } from "react-native";
+import { client } from "@/lib/client";
 
 type SystemDataContextProps = {
   data: SystemData;
@@ -33,9 +34,11 @@ export default function SystemDataProvider({
     addresses: [],
     lastImport: null,
     transactions: new Set<Transaction>(),
+    categories: new Map<number, Category>(),
   });
   const [isOnline, setIsOnline] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const websocket = useRef<WebSocket | null>(null);
   const retries = useRef(0);
@@ -121,6 +124,35 @@ export default function SystemDataProvider({
         websocket.current.close();
       }
     };
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (isLoading) return;
+      setIsLoading(true);
+
+      try {
+        const response = await client.get("/categories");
+        const data = response.data as Category[];
+
+        setData((prev) => {
+          const nextCategories = new Map(prev.categories);
+          for (const cat of data) {
+            nextCategories.set(cat.id, cat);
+          }
+
+          return {
+            ...prev,
+            categories: nextCategories,
+          };
+        });
+      } catch (e) {
+        console.error("An error has occurred while fetching categories: ", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   return (
