@@ -92,6 +92,12 @@ class TransactionData(BaseModel):
         description="The action being done on the transactions",
         examples=["paid to", "sent to", "reverse", "receive"],
     )
+    category_id: int | None = Field(
+        default=None, description="The category to which the transaction belongs to"
+    )
+    autocategorized: bool = Field(
+        description="Condition to check if the transaction was automatically categorized"
+    )
 
 
 class TransactionDirection(str, enum.Enum):
@@ -101,8 +107,12 @@ class TransactionDirection(str, enum.Enum):
 
 
 class GetTransactionsParams(BaseModel):
-    start: int = Field(description="The timestamp of the start of a duration")
-    end: int = Field(description="The timestamp of the end of a duration")
+    start: int | None = Field(
+        default=None, description="The timestamp of the start of a duration"
+    )
+    end: int | None = Field(
+        default=None, description="The timestamp of the end of a duration"
+    )
     direction: TransactionDirection = Field(
         description="The direction where the transaction is heading based"
     )
