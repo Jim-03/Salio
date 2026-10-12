@@ -47,3 +47,18 @@ export interface Category {
   id: number;
   name: string;
 }
+
+export interface Filters {
+  limit: number;
+  start?: number;
+  end?: number;
+  search_term?: string;
+  page: number;
+  direction: TransactionDirection;
+}
+
+export enum TransactionDirection {
+  ALL = "ALL",
+  INCOME = "INCOME",
+  SPENT = "SPENT",
+}
