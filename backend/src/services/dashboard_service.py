@@ -1,3 +1,4 @@
+from dns import transaction
 from fastapi import Depends, HTTPException
 from gevent.pool import pass_value
 from sqlalchemy import and_, case, func, not_
@@ -34,12 +35,15 @@ class DashboardService:
             (list[TransactionModel]): A list of transactions
         """
         # Check if date range is valid
-        if params.start > params.end:
-            raise HTTPException(
-                status_code=400, detail={"error": "Start date must be before end data!"}
-            )
+        if params.start and params.end and params.start > params.end:
+          raise HTTPException(
+              status_code=400, detail={"error": "Start date must be before end data!"}
+          )
 
-        conditions = [TransactionModel.timestamp.between(params.start, params.end)]
+        conditions = []
+
+        if params.start and params.end:
+          conditions.append(TransactionModel.timestamp.between(params.start, params.end))
 
         # Include the search term if provided
         if params.search_term:
