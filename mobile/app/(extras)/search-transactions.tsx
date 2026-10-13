@@ -26,6 +26,7 @@ import {
   TransactionDirection,
 } from "@/lib/dto";
 import { TransactionRow } from "@/components/transaction-row";
+import FiltersModal from "@/components/filters-modal";
 
 /**
  * Re-usable component rendering the search transaction's page
@@ -110,7 +111,11 @@ export default function SearchTransactions() {
         setFilters={setFilters}
         setHasMoreData={setHasMoreData}
       />
-      <FilterBar />
+      <FilterBar
+        currentFilters={filters}
+        setFilters={setFilters}
+        refetch={() => setHasMoreData(true)}
+      />
       <TransactionsDisplay
         transactions={transactions}
         changePage={setFilters}
@@ -204,17 +209,37 @@ const SearchBar = ({
  * Reusable component rendering the filter icon
  * TODO: Implement filter transactions modal
  */
-const FilterBar = () => {
+const FilterBar = ({
+  currentFilters,
+  setFilters,
+  refetch,
+}: {
+  currentFilters: Filters;
+  setFilters: (value: ((prevState: Filters) => Filters) | Filters) => void;
+  refetch: () => void;
+}) => {
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const AnimatedPressable = createAnimatedComponent(Pressable);
   return (
-    <AnimatedPressable
-      className={
-        "bg-green-900 rounded-full items-center justify-center p-4 elevation-md"
-      }
-      style={{ marginHorizontal: 20 }}
-    >
-      <Lucide name={"funnel"} size={24} color={"white"} />
-    </AnimatedPressable>
+    <>
+      {showFilterModal && (
+        <FiltersModal
+          close={() => setShowFilterModal(false)}
+          currentFilters={currentFilters}
+          setFilters={setFilters}
+          refetch={refetch}
+        />
+      )}
+      <AnimatedPressable
+        onPress={() => setShowFilterModal(true)}
+        className={
+          "bg-green-900 rounded-full items-center justify-center p-4 elevation-md"
+        }
+        style={{ marginHorizontal: 20 }}
+      >
+        <Lucide name={"funnel"} size={24} color={"white"} />
+      </AnimatedPressable>
+    </>
   );
 };
 
