@@ -1,9 +1,18 @@
 import { Transaction } from "@/lib/dto";
 import { useData } from "@/providers/data-provider.component";
-import { Modal, Pressable, Text, View } from "react-native";
-import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
+import { useState } from "react";
 import CategoryPicker from "@/components/category-picker";
 import { createAnimatedComponent, SlideInLeft } from "react-native-reanimated";
+import Lucide from "@react-native-vector-icons/lucide";
 
 /**
  * Component rendering transaction rows
@@ -99,7 +108,7 @@ export const TransactionRow = ({
  * @param props.close State function to close modal
  * @param props.isIncome Condition to confirm if the transaction is an income/expense
  */
-const TransactionModal = ({
+export const TransactionModal = ({
   transaction,
   close,
   isIncome,
@@ -108,7 +117,9 @@ const TransactionModal = ({
   close: () => void;
   isIncome: boolean;
 }) => {
+  const isDark = useColorScheme() === "dark";
   const { data } = useData();
+
   const transactionData = [
     { "Transaction code": transaction.code },
     { Date: new Date(transaction.timestamp) },
@@ -119,70 +130,181 @@ const TransactionModal = ({
         ?.name,
     },
   ];
-  const color = isIncome
-    ? "text-green-800 dark:text-green-600"
-    : "text-red-600";
+
+  const amountColor = isIncome
+    ? "text-green-700 dark:text-green-500"
+    : "text-red-600 dark:text-red-500";
 
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(
     transaction.category_id || 0,
   );
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  useEffect(() => {
-    // TODO: Update transaction
-    transaction.category_id = selectedCategory;
-  }, [selectedCategory]);
+  const hasCategoryChanged =
+    selectedCategory !== (transaction.category_id || 0);
+
+  const handleUpdate = async () => {
+    // TODO: Implement your update logic here
+    setIsUpdating(true);
+    try {
+      console.log(
+        "Updating transaction with new category ID:",
+        selectedCategory,
+      );
+      // await client.patch(`/transactions/${transaction.id}`, { category_id: selectedCategory });
+
+      // Update the local object if you aren't refetching immediately
+      // transaction.category_id = selectedCategory;
+
+      close();
+    } catch (error) {
+      console.error("Failed to update category:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
-    <Modal animationType={"fade"} onRequestClose={close} transparent>
+    <Modal animationType="fade" onRequestClose={close} transparent>
       {/* Background */}
-      <View className={"flex-1 bg-black/60 justify-center items-center"}>
-        {/* Main */}
-        <View
-          className={
-            "bg-[rgb(245_245_245)] dark:bg-gray-600 p-5 rounded-xl elevation-md w-[90%]"
-          }
-        >
-          {/* Header */}
-          <Text className={`text-center font-bold ${color} text-2xl mb-2`}>
-            {transaction.recipient}
-          </Text>
+      <View className="flex-1 bg-black/60 justify-center items-center p-4">
+        {/* Main Card */}
+        <View className="bg-amber-50 dark:bg-slate-900 p-6 rounded-[32px] elevation-xl w-full max-h-[90%] shadow-2xl">
+          {/* Header Row */}
+          <View className="flex-row justify-between items-start mb-6">
+            <View className="flex-1 pr-4">
+              <Text className="text-sm font-semibold text-green-900/60 dark:text-amber-50/60 uppercase tracking-wider mb-1">
+                {isIncome ? "Received From" : "Sent To"}
+              </Text>
+              <Text
+                className="font-bold text-gray-900 dark:text-white text-2xl"
+                numberOfLines={2}
+              >
+                {transaction.recipient}
+              </Text>
+            </View>
+            <Pressable
+              onPress={close}
+              className="p-2 bg-black/5 dark:bg-white/10 rounded-full"
+            >
+              <Lucide name="x" size={20} color={isDark ? "white" : "#022c22"} />
+            </Pressable>
+          </View>
 
-          {/* Content */}
-          {transactionData.map((t, k) => {
-            const label = Object.keys(t)[0];
-            let value = Object.values(t)[0];
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {/* Details List */}
+            <View className="bg-white/50 dark:bg-black/20 rounded-2xl p-4 mb-5 border border-black/5 dark:border-white/5">
+              {transactionData.map((t, k) => {
+                const label = Object.keys(t)[0];
+                let value = Object.values(t)[0];
 
-            if (value instanceof Date) {
-              value = value.toDateString();
-            }
+                if (value instanceof Date) {
+                  value = value.toLocaleDateString("en-KE", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                }
 
-            return (
-              <View key={k} className={"flex-row items-center"}>
-                <Text
-                  className={"w-1/2 mt-2 mb-2 font-semibold dark:text-amber-50"}
-                >
-                  {label}:{" "}
-                </Text>
-                <Text
-                  className={`${!isNaN(value) && label === "Amount" ? color : "dark:text-white"}`}
-                >
-                  {!isNaN(value) ? `Kshs. ${value}` : value}
+                const isAmount = label === "Amount";
+                const displayValue =
+                  isAmount && !isNaN(Number(value))
+                    ? `Kshs. ${Number(value).toLocaleString()}`
+                    : value;
+
+                return (
+                  <View
+                    key={k}
+                    className={`flex-row justify-between items-center py-3 ${
+                      k !== transactionData.length - 1
+                        ? "border-b border-black/5 dark:border-white/10"
+                        : ""
+                    }`}
+                  >
+                    <Text className="text-gray-500 dark:text-gray-400 font-medium">
+                      {label}
+                    </Text>
+                    <Text
+                      className={`font-semibold text-right max-w-[60%] ${isAmount ? amountColor : "text-gray-900 dark:text-white"}`}
+                    >
+                      {displayValue || "-"}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+
+            {/* Category Selector */}
+            <Text className="text-sm font-semibold text-green-900/60 dark:text-amber-50/60 uppercase tracking-wider mb-2 ml-1">
+              Category
+            </Text>
+            <Pressable
+              className="flex-row items-center justify-between bg-white dark:bg-black/20 border border-green-900/20 dark:border-amber-50/20 p-4 rounded-2xl mb-5"
+              onPress={() => setShowCategoryPicker(true)}
+            >
+              <View className="flex-row items-center gap-3">
+                <View className="bg-green-100 dark:bg-green-900/40 p-2 rounded-full">
+                  <Lucide
+                    name="tag"
+                    size={20}
+                    color={isDark ? "#4ade80" : "#14532d"}
+                  />
+                </View>
+                <Text className="font-semibold text-gray-900 dark:text-white text-base">
+                  {selectedCategory
+                    ? data.categories.get(selectedCategory)?.name
+                    : "UNKNOWN"}
                 </Text>
               </View>
-            );
-          })}
+              <Lucide
+                name="chevron-right"
+                size={20}
+                color={isDark ? "gray" : "gray"}
+              />
+            </Pressable>
 
-          {/* SMS message */}
-          <Text
-            className={
-              "bg-black/15 dark:text-white p-4 text-justify rounded-xl mt-5"
-            }
-          >
-            {transaction.sms}
-          </Text>
+            {/* SMS message */}
+            <Text className="text-sm font-semibold text-green-900/60 dark:text-amber-50/60 uppercase tracking-wider mb-2 ml-1">
+              Message Source
+            </Text>
+            <View className="bg-amber-100/50 dark:bg-slate-800/80 p-4 rounded-2xl border border-amber-200/50 dark:border-slate-700">
+              <Text className="text-gray-700 dark:text-gray-300 leading-relaxed italic">
+                &#34;{transaction.sms}&#34;
+              </Text>
+            </View>
 
-          {/* Category */}
+            {/* Spacer for scrollview */}
+            <View className="h-6" />
+          </ScrollView>
+
+          {/* Conditional Update Button */}
+          {hasCategoryChanged && (
+            <View className="pt-4 mt-2 border-t border-black/5 dark:border-white/10">
+              <Pressable
+                onPress={handleUpdate}
+                disabled={isUpdating}
+                className={`py-4 rounded-2xl items-center justify-center flex-row gap-2 ${
+                  isUpdating ? "bg-green-900/70" : "bg-green-900"
+                }`}
+              >
+                {isUpdating ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <Text className="text-white font-bold text-base">
+                      Update Category
+                    </Text>
+                    <Lucide name="check-circle" size={18} color="white" />
+                  </>
+                )}
+              </Pressable>
+            </View>
+          )}
+
+          {/* Category Modal Picker */}
           {showCategoryPicker && (
             <CategoryPicker
               close={() => setShowCategoryPicker(false)}
@@ -190,22 +312,6 @@ const TransactionModal = ({
               changeCategory={setSelectedCategory}
             />
           )}
-          <View className={"flex-row items-center mt-5"}>
-            <Text className={"font-semibold dark:text-white mr-5"}>
-              Category:
-            </Text>
-            <Pressable
-              className={"bg-green-900 rounded"}
-              onPress={() => setShowCategoryPicker(true)}
-            >
-              <Text className={" p-2.5  text-white"}>
-                {transaction.category_id
-                  ? data.categories.get(transaction.category_id)?.name
-                  : "UNKNOWN"}
-              </Text>
-            </Pressable>
-          </View>
-          {transaction.autocategorized && <Text></Text>}
         </View>
       </View>
     </Modal>
