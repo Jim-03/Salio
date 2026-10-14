@@ -3,6 +3,7 @@ import { useData } from "@/providers/data-provider.component";
 import { Modal, Pressable, Text, View } from "react-native";
 import { useEffect, useState } from "react";
 import CategoryPicker from "@/components/category-picker";
+import { createAnimatedComponent, SlideInLeft } from "react-native-reanimated";
 
 /**
  * Component rendering transaction rows
@@ -21,6 +22,7 @@ export const TransactionRow = ({
     transaction.action.includes("receive") ||
     (transaction.action.includes("reverse") &&
       transaction.sms.includes("credit"));
+  const AnimatedPressable = createAnimatedComponent(Pressable);
 
   /**
    * Get two-lettered initials from recipient name
@@ -33,10 +35,11 @@ export const TransactionRow = ({
   };
 
   return (
-    <Pressable
+    <AnimatedPressable
       className={
         "mt-2.5 mb-2.5 flex-row items-center border-b border-b-black/10 dark:border-b-white/30 pb-2 pt-2 h-20"
       }
+      entering={SlideInLeft}
       onPress={() => setShowTransactionModal(true)}
     >
       {showTransactionModal && (
@@ -85,7 +88,7 @@ export const TransactionRow = ({
           {data.addresses.find((t) => t.id === transaction.address_id)?.name}
         </Text>
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 };
 
