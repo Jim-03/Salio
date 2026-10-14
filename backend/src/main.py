@@ -10,6 +10,7 @@ from src.routers.address_router import address_router
 from src.routers.category_router import category_router
 from src.routers.dashboard_router import dashboard_router
 from src.routers.messages_router import message_router
+from src.routers.transaction_router import transaction_router
 from src.services.socket_manager import manager
 
 # Instantiate FastAPI app
@@ -51,6 +52,7 @@ app.include_router(address_router)
 app.include_router(message_router)
 app.include_router(dashboard_router)
 app.include_router(category_router)
+app.include_router(transaction_router)
 
 
 def bootstrap():
@@ -58,7 +60,7 @@ def bootstrap():
     # Attempt connecting to the database
     with engine.connect():
         print("Connected to database")
-    uvicorn.run(app="main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app="src.main:app", host="0.0.0.0", port=8000, reload=True)
 
 
 if __name__ == "__main__":

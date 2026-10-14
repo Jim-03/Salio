@@ -13,6 +13,7 @@ import { useState } from "react";
 import CategoryPicker from "@/components/category-picker";
 import { createAnimatedComponent, SlideInLeft } from "react-native-reanimated";
 import Lucide from "@react-native-vector-icons/lucide";
+import { client } from "@/lib/client";
 
 /**
  * Component rendering transaction rows
@@ -139,24 +140,23 @@ export const TransactionModal = ({
   const [selectedCategory, setSelectedCategory] = useState(
     transaction.category_id || 0,
   );
+  const [applyToAll, setApplyToAll] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const hasCategoryChanged =
     selectedCategory !== (transaction.category_id || 0);
 
   const handleUpdate = async () => {
-    // TODO: Implement your update logic here
     setIsUpdating(true);
     try {
       console.log(
         "Updating transaction with new category ID:",
         selectedCategory,
       );
-      // await client.patch(`/transactions/${transaction.id}`, { category_id: selectedCategory });
-
-      // Update the local object if you aren't refetching immediately
-      // transaction.category_id = selectedCategory;
-
+      await client.patch(
+        `/transactions/${transaction.id}?category_id=${selectedCategory}&apply_all=${applyToAll}`,
+      );
+      transaction.category_id = selectedCategory;
       close();
     } catch (error) {
       console.error("Failed to update category:", error);
@@ -280,9 +280,34 @@ export const TransactionModal = ({
             <View className="h-6" />
           </ScrollView>
 
-          {/* Conditional Update Button */}
+          {/* Conditional Update Action Area */}
           {hasCategoryChanged && (
             <View className="pt-4 mt-2 border-t border-black/5 dark:border-white/10">
+              {/* Apply to All Checkbox */}
+              <Pressable
+                className="flex-row items-center gap-3 mb-4 pl-1"
+                onPress={() => setApplyToAll(!applyToAll)}
+              >
+                <View
+                  className={`w-6 h-6 rounded-md border items-center justify-center ${
+                    applyToAll
+                      ? "bg-green-900 border-green-900 dark:bg-green-500 dark:border-green-500"
+                      : "border-gray-400 dark:border-gray-500 bg-transparent"
+                  }`}
+                >
+                  {applyToAll && (
+                    <Lucide
+                      name="check"
+                      size={16}
+                      color={isDark ? "#0f172a" : "white"}
+                    />
+                  )}
+                </View>
+                <Text className="flex-1 text-gray-700 dark:text-gray-300 font-medium">
+                  Update all transactions from {transaction.recipient}
+                </Text>
+              </Pressable>
+
               <Pressable
                 onPress={handleUpdate}
                 disabled={isUpdating}
