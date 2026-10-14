@@ -132,6 +132,10 @@ class GetTransactionsParams(BaseModel):
         examples=[1, 2, 3],
     )
 
+    category: int | str | None = Field(
+        default=None, description="Category's primary key"
+    )
+
 
 class GetTransactionsResponse(BaseModel):
     transactions: list[TransactionData] = Field(description="Transaction data")

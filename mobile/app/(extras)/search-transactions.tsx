@@ -44,6 +44,7 @@ export default function SearchTransactions() {
     limit: 10,
     page: 0,
     search_term: "",
+    category: "ALL",
   });
 
   const loadData = async () => {
@@ -92,12 +93,19 @@ export default function SearchTransactions() {
     filters.direction,
     filters.start,
     filters.end,
+    filters.category,
   ]);
 
   // Reset to start at empty state
   useEffect(() => {
     setTransactions(new Map());
-  }, [filters.start, filters.end, filters.search_term, filters.direction]);
+  }, [
+    filters.start,
+    filters.end,
+    filters.search_term,
+    filters.direction,
+    filters.category,
+  ]);
 
   return (
     <View className="bg-amber-50 dark:bg-slate-900 flex-1">

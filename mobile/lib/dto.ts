@@ -55,6 +55,7 @@ export interface Filters {
   search_term?: string;
   page: number;
   direction: TransactionDirection;
+  category: number | "ALL" | "UNKNOWN";
 }
 
 export enum TransactionDirection {

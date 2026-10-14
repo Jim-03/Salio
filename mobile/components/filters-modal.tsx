@@ -9,8 +9,9 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import Animated, { ZoomIn, ZoomOutEasyDown } from "react-native-reanimated";
+import Animated, { PinwheelIn, ZoomInEasyDown } from "react-native-reanimated";
 import { Filters, TransactionDirection } from "@/lib/dto";
+import { useData } from "@/providers/data-provider.component";
 
 interface FiltersModalProps {
   close: () => void;
@@ -28,6 +29,7 @@ type Timeframe =
  * @param props.close State function to unmount the component
  * @param props.currentFilters Filters that are already applied in the previous fetch
  * @param props.setFilters State function to apply new filters for the next fetch
+ * @param props.refetch State function to start from an empty state
  */
 export default function FiltersModal({
   close,
@@ -36,11 +38,11 @@ export default function FiltersModal({
   refetch,
 }: FiltersModalProps) {
   const isDark = useColorScheme() === "dark";
+  const { data } = useData();
+  const categories = Array.from(data.categories.values());
 
-  // Local state to hold selections before applying
-  const [localFilters, setLocalFilters] = useState<Filters>({
-    ...currentFilters,
-  });
+  // Local state to hold selections before applying. Fallback category to 'ALL' if undefined.
+  const [localFilters, setLocalFilters] = useState<Filters>(currentFilters);
 
   // Determine initial timeframe based on whether start/end exist
   const [timeframe, setTimeframe] = useState<Timeframe>(
@@ -129,8 +131,8 @@ export default function FiltersModal({
       limit: localFilters.limit,
       start: finalStart,
       end: finalEnd,
-      page: 0, // Always reset to the first page when applying new filters
-      // search_term is ignored here; we spread prev and it remains intact
+      category: localFilters.category,
+      page: 0,
     }));
     close();
   };
@@ -142,6 +144,7 @@ export default function FiltersModal({
       limit: 10,
       start: undefined,
       end: undefined,
+      category: "ALL",
       page: 0,
     }));
     close();
@@ -180,8 +183,8 @@ export default function FiltersModal({
       <View className="bg-black/60 flex-1 justify-center items-center p-4">
         {/* Filters form */}
         <Animated.View
-          entering={ZoomIn.duration(500)}
-          exiting={ZoomOutEasyDown}
+          entering={PinwheelIn.duration(300)}
+          exiting={ZoomInEasyDown}
           className="bg-amber-50 dark:bg-slate-900 w-full rounded-[32px] p-6 shadow-2xl max-h-[85%]"
         >
           {/* Header */}
@@ -211,6 +214,39 @@ export default function FiltersModal({
                     isActive={localFilters.direction === dir}
                     onPress={() =>
                       setLocalFilters({ ...localFilters, direction: dir })
+                    }
+                  />
+                ))}
+              </View>
+            </View>
+
+            {/* Category */}
+            <View className="mb-6">
+              <Text className="text-sm font-semibold text-green-900/60 dark:text-amber-50/60 mb-3 uppercase tracking-wider">
+                Category
+              </Text>
+              <View className="flex-row flex-wrap">
+                <Chip
+                  label="All"
+                  isActive={localFilters.category === "ALL"}
+                  onPress={() =>
+                    setLocalFilters({ ...localFilters, category: "ALL" })
+                  }
+                />
+                <Chip
+                  label="UNKNOWN"
+                  isActive={localFilters.category === "UNKNOWN"}
+                  onPress={() =>
+                    setLocalFilters({ ...localFilters, category: "UNKNOWN" })
+                  }
+                />
+                {categories.map((cat) => (
+                  <Chip
+                    key={cat.id}
+                    label={cat.name}
+                    isActive={localFilters.category === cat.id}
+                    onPress={() =>
+                      setLocalFilters({ ...localFilters, category: cat.id })
                     }
                   />
                 ))}

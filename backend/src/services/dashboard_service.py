@@ -61,6 +61,13 @@ class DashboardService:
         elif params.direction == TransactionDirection.INCOME:
             conditions.append(self.income_clause)
 
+        # Add category id if included
+        if params.category:
+            if params.category == "UNKNOWN":
+                conditions.append(TransactionModel.category_id == None)
+            elif params.category != "ALL":
+                conditions.append(TransactionModel.category_id == params.category)
+
         # Build query
         query = (
             self.repository.query(TransactionModel)
